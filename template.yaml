@@ -32,6 +32,59 @@ Resources:
         Variables:
           ENVIRONMENT: !Ref Environment
 
+  # Lambda permission for API Gateway
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref BlockbusterChatBotFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 
+        - "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayId}/*"
+        - ApiGatewayId: 
+            Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
+
+  # API Gateway Method for GET /api/chat
+  GetChatMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId:
+        Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
+      ResourceId:
+        Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayChatResourceId-${Environment}"
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BlockbusterChatBotFunction.Arn}/invocations"
+
+  # API Gateway Method for POST /api/chat
+  PostChatMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId:
+        Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
+      ResourceId:
+        Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayChatResourceId-${Environment}"
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BlockbusterChatBotFunction.Arn}/invocations"
+
+  # API Gateway Deployment (to apply the new methods)
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - GetChatMethod
+      - PostChatMethod
+    Properties:
+      RestApiId:
+        Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
+      StageName: !Ref Environment
+
   MyLambdaVersion:
     Type: AWS::Lambda::Version
     Properties:
