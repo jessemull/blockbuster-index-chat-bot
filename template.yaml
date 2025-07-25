@@ -26,8 +26,11 @@ Resources:
         S3Bucket:
           Fn::ImportValue: !Sub "BlockbusterChatBotBucketName-${Environment}"
         S3Key: !Ref S3Key
-      Timeout: 5
-      MemorySize: 128
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
 
   MyLambdaVersion:
     Type: AWS::Lambda::Version
