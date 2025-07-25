@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  Environment:
+    Type: String
+    Default: "dev"
+    Description: "The environment for the deployment (dev or prod)"
+    AllowedValues:
+      - dev
+      - prod
+    ConstraintDescription: "Must be either 'dev' or 'prod'."
+
+Resources:
+  BlockbusterChatBotExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "blockbuster-index-chat-bot-role-${Environment}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecution
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: "arn:aws:logs:*:*:*"
+
+Outputs:
+  BlockbusterChatBotExecutionRoleArn:
+    Value: !GetAtt BlockbusterChatBotExecutionRole.Arn
+    Description: "Lambda execution role ARN"
+    Export:
+      Name: !Sub "BlockbusterChatBotExecutionRoleArn-${Environment}"
