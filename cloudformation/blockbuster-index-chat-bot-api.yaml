@@ -90,6 +90,10 @@ Resources:
           ResponseModels:
             application/json: !ImportValue 
               Fn::Sub: "BlockbusterChatBotErrorResponseModel-${Environment}"
+        - StatusCode: "405"
+          ResponseModels:
+            application/json: !ImportValue 
+              Fn::Sub: "BlockbusterChatBotErrorResponseModel-${Environment}"
         - StatusCode: "500"
           ResponseModels:
             application/json: !ImportValue 
