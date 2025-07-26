@@ -17,6 +17,9 @@ Parameters:
     Type: String
     Description: "ARN of the SSL certificate for the custom domain"
 
+Conditions:
+  IsProd: !Equals [ !Ref Environment, "prod" ]
+
 Resources:
   ChatBotApi:
     Type: AWS::ApiGateway::RestApi
@@ -83,7 +86,10 @@ Resources:
             ResponseParameters:
               method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
               method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Origin: !If 
+                - IsProd
+                - "'https://www.blockbusterindex.com'"
+                - "'https://www.dev.blockbusterindex.com'"
             ResponseTemplates:
               application/json: ""
       MethodResponses:
