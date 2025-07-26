@@ -17,9 +17,6 @@ Parameters:
     Type: String
     Description: "ARN of the SSL certificate for the custom domain"
 
-Conditions:
-  IsProd: !Equals [!Ref Environment, "prod"]
-
 Resources:
   ChatBotApi:
     Type: AWS::ApiGateway::RestApi
@@ -44,6 +41,8 @@ Resources:
       ParentId: !Ref ApiResource
       PathPart: "chat"
 
+
+
   GetChatMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -54,7 +53,17 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:blockbuster-index-chat-bot-${Environment}/invocations"
+        Uri: !Sub "arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:blockbuster-index-chat-bot-${Environment}/invocations"
+      MethodResponses:
+        - StatusCode: "200"
+          ResponseModels:
+            application/json: !ImportValue 
+              Fn::Sub: "BlockbusterChatBotChatResponseModel-${Environment}"
+        - StatusCode: "500"
+          ResponseModels:
+            application/json: !ImportValue 
+              Fn::Sub: "BlockbusterChatBotErrorResponseModel-${Environment}"
+
 
   PostChatMethod:
     Type: AWS::ApiGateway::Method
@@ -63,10 +72,28 @@ Resources:
       ResourceId: !Ref ChatResource
       HttpMethod: POST
       AuthorizationType: NONE
+      RequestModels:
+        application/json: !ImportValue 
+          Fn::Sub: "BlockbusterChatBotChatRequestModel-${Environment}"
+      RequestValidatorId: !ImportValue 
+        Fn::Sub: "BlockbusterChatBotChatRequestValidator-${Environment}"
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:blockbuster-index-chat-bot-${Environment}/invocations"
+        Uri: !Sub "arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:blockbuster-index-chat-bot-${Environment}/invocations"
+      MethodResponses:
+        - StatusCode: "200"
+          ResponseModels:
+            application/json: !ImportValue 
+              Fn::Sub: "BlockbusterChatBotChatResponseModel-${Environment}"
+        - StatusCode: "400"
+          ResponseModels:
+            application/json: !ImportValue 
+              Fn::Sub: "BlockbusterChatBotErrorResponseModel-${Environment}"
+        - StatusCode: "500"
+          ResponseModels:
+            application/json: !ImportValue 
+              Fn::Sub: "BlockbusterChatBotErrorResponseModel-${Environment}"
 
   OptionsChatMethod:
     Type: AWS::ApiGateway::Method
