@@ -10,7 +10,7 @@ describe("getCorsHeaders", () => {
     const headers = getCorsHeaders(allowedOrigin);
     expect(headers["Access-Control-Allow-Origin"]).toBe(allowedOrigin);
     expect(headers["Access-Control-Allow-Headers"]).toBe(
-      "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
+      "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
     );
     expect(headers["Access-Control-Allow-Methods"]).toBe("GET,POST,OPTIONS");
     expect(headers["Content-Type"]).toBe("application/json");
@@ -35,7 +35,7 @@ describe("getCorsHeaders", () => {
 
   it("falls back to default origin if ALLOWED_ORIGINS is empty and origin is undefined", () => {
     const originalAllowed = [...ALLOWED_ORIGINS];
-    (ALLOWED_ORIGINS as any).length = 0;
+    (ALLOWED_ORIGINS as string[]).length = 0;
 
     const headers = getCorsHeaders(undefined);
     expect(headers["Access-Control-Allow-Origin"]).toBe(defaultOrigin);

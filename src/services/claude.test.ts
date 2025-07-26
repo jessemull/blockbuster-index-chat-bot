@@ -1,5 +1,4 @@
 import { getTapeyResponse } from "./claude";
-import Anthropic from "@anthropic-ai/sdk";
 
 jest.mock("@anthropic-ai/sdk", () => {
   const createMock = jest.fn();
@@ -93,7 +92,7 @@ describe("getTapeyResponse", () => {
     await getTapeyResponse("test");
     expect(console.error).toHaveBeenCalledWith(
       "Error calling Claude API:",
-      error
+      error,
     );
   });
 });
