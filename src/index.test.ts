@@ -1,24 +1,9 @@
-import { APIGatewayProxyEvent } from "aws-lambda";
 import { handler } from "./handler";
+import { APIGatewayProxyEvent } from "aws-lambda";
 import { getCorsHeaders } from "./utils/cors";
 import { getTapeyResponse } from "./services/claude";
 
-jest.mock("@anthropic-ai/sdk", () => ({
-  __esModule: true,
-  default: jest.fn().mockImplementation(() => ({
-    messages: {
-      create: jest.fn().mockResolvedValue({
-        content: [
-          {
-            type: "text",
-            text: "Hey there, dude! That's totally awesome! The Blockbuster Index is this rad project that tracks consumer spending patterns and retail behavior across the United States. It's like having a crystal ball for understanding how people are shopping and how stores are doing! Pretty cool, right?",
-          },
-        ],
-      }),
-    },
-  })),
-}));
-
+// Mock the dependencies
 jest.mock("./utils/cors");
 jest.mock("./services/claude");
 
@@ -140,6 +125,7 @@ describe("Blockbuster Index Chat Bot Handler", () => {
     );
     expect(responseBody.timestamp).toBeDefined();
     expect(responseBody.requestId).toBe("test-request-id");
+    expect(responseBody.history).toEqual([]);
   });
 
   it("should handle POST request with valid message", async () => {
@@ -162,7 +148,18 @@ describe("Blockbuster Index Chat Bot Handler", () => {
     expect(responseBody.message).toContain("Hey there, dude!");
     expect(responseBody.timestamp).toBeDefined();
     expect(responseBody.requestId).toBe("test-request-id");
-    expect(mockGetTapeyResponse).toHaveBeenCalledWith("Hello bot!");
+    expect(responseBody.history).toHaveLength(2);
+    expect(responseBody.history[0]).toEqual({
+      role: "user",
+      content: "Hello bot!",
+      timestamp: expect.any(String),
+    });
+    expect(responseBody.history[1]).toEqual({
+      role: "assistant",
+      content: "Hey there, dude! That's totally awesome!",
+      timestamp: expect.any(String),
+    });
+    expect(mockGetTapeyResponse).toHaveBeenCalledWith("Hello bot!", undefined);
   });
 
   it("should return 400 for POST request with empty message", async () => {
@@ -192,6 +189,106 @@ describe("Blockbuster Index Chat Bot Handler", () => {
     expect(responseBody.error).toBe("Method not allowed");
   });
 
+  it("should handle POST request with existing conversation history", async () => {
+    const existingHistory = [
+      {
+        role: "user" as const,
+        content: "Previous message",
+        timestamp: "2023-01-01T00:00:00Z",
+      },
+      {
+        role: "assistant" as const,
+        content: "Previous response",
+        timestamp: "2023-01-01T00:00:01Z",
+      },
+    ];
+
+    const event = getMockEvent(
+      "POST",
+      JSON.stringify({
+        message: "Follow up question",
+        history: existingHistory,
+      }),
+    );
+    const result = await handler(event);
+
+    expect(result.statusCode).toBe(200);
+    const responseBody = JSON.parse(result.body!);
+    expect(responseBody.history).toHaveLength(4);
+    expect(responseBody.history[0].content).toBe("Previous message");
+    expect(responseBody.history[1].content).toBe("Previous response");
+    expect(responseBody.history[2].content).toBe("Follow up question");
+    expect(responseBody.history[3].content).toBe(
+      "Hey there, dude! That's totally awesome!",
+    );
+    expect(mockGetTapeyResponse).toHaveBeenCalledWith(
+      "Follow up question",
+      existingHistory,
+    );
+  });
+
+  it("should limit conversation history to 5 messages", async () => {
+    const longHistory = [
+      {
+        role: "user" as const,
+        content: "Old 1",
+        timestamp: "2023-01-01T00:00:00Z",
+      },
+      {
+        role: "assistant" as const,
+        content: "Old 1 response",
+        timestamp: "2023-01-01T00:00:01Z",
+      },
+      {
+        role: "user" as const,
+        content: "Old 2",
+        timestamp: "2023-01-01T00:00:02Z",
+      },
+      {
+        role: "assistant" as const,
+        content: "Old 2 response",
+        timestamp: "2023-01-01T00:00:03Z",
+      },
+      {
+        role: "user" as const,
+        content: "Old 3",
+        timestamp: "2023-01-01T00:00:04Z",
+      },
+      {
+        role: "assistant" as const,
+        content: "Old 3 response",
+        timestamp: "2023-01-01T00:00:05Z",
+      },
+      {
+        role: "user" as const,
+        content: "Old 4",
+        timestamp: "2023-01-01T00:00:06Z",
+      },
+      {
+        role: "assistant" as const,
+        content: "Old 4 response",
+        timestamp: "2023-01-01T00:00:07Z",
+      },
+    ];
+
+    const event = getMockEvent(
+      "POST",
+      JSON.stringify({
+        message: "New message",
+        history: longHistory,
+      }),
+    );
+    const result = await handler(event);
+
+    expect(result.statusCode).toBe(200);
+    const responseBody = JSON.parse(result.body!);
+    expect(responseBody.history).toHaveLength(5); // Limited to 5 messages
+    expect(responseBody.history[0].content).toBe("Old 3 response"); // Oldest kept message
+    expect(responseBody.history[4].content).toBe(
+      "Hey there, dude! That's totally awesome!",
+    ); // Newest message
+  });
+
   it("should handle POST request with null body", async () => {
     const event = getMockEvent("POST", undefined);
     const result = await handler(event);
@@ -217,6 +314,20 @@ describe("Blockbuster Index Chat Bot Handler", () => {
     expect(result.statusCode).toBe(400);
     const responseBody = JSON.parse(result.body!);
     expect(responseBody.error).toBe("Message is required");
+  });
+
+  it("should handle origin extraction when referer doesn't match regex", async () => {
+    const event = getMockEvent("POST", JSON.stringify({ message: "Hello" }));
+    event.headers.Origin = undefined;
+    event.headers.origin = undefined;
+    event.headers.Referer = "invalid-url-format";
+    event.headers.referer = "invalid-url-format";
+
+    const result = await handler(event);
+
+    expect(result.statusCode).toBe(200);
+    const responseBody = JSON.parse(result.body!);
+    expect(responseBody.message).toContain("Hey there, dude!");
   });
 
   it("should handle Claude API error gracefully", async () => {
