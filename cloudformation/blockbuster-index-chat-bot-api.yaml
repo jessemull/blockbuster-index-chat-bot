@@ -41,6 +41,32 @@ Resources:
       ParentId: !Ref ApiResource
       PathPart: "chat"
 
+  # API Gateway Method for GET /chat
+  GetChatMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ChatBotApi
+      ResourceId: !Ref ChatResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:blockbuster-index-chat-bot-${Environment}/invocations"
+
+  # API Gateway Method for POST /chat
+  PostChatMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ChatBotApi
+      ResourceId: !Ref ChatResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:blockbuster-index-chat-bot-${Environment}/invocations"
+
   OptionsChatMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -77,6 +103,8 @@ Resources:
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
+      - GetChatMethod
+      - PostChatMethod
       - OptionsChatMethod
     Properties:
       RestApiId: !Ref ChatBotApi
