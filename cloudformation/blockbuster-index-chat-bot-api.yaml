@@ -17,6 +17,13 @@ Parameters:
     Type: String
     Description: "ARN of the SSL certificate for the custom domain"
 
+Mappings:
+  EnvironmentMapping:
+    dev:
+      Name: "Dev"
+    prod:
+      Name: "Prod"
+
 Resources:
   ChatBotApi:
     Type: AWS::ApiGateway::RestApi
@@ -47,7 +54,7 @@ Resources:
     Properties:
       RestApiId: !Ref ChatBotApi
       ContentType: application/json
-      Name: !Sub "ChatMessage-${Environment}"
+      Name: !Join ["", ["ChatMessage", !FindInMap [EnvironmentMapping, !Ref Environment, Name]]]
       Description: "A single message in the conversation history"
       Schema:
         type: object
@@ -72,7 +79,7 @@ Resources:
     Properties:
       RestApiId: !Ref ChatBotApi
       ContentType: application/json
-      Name: !Sub "ChatRequest-${Environment}"
+      Name: !Join ["", ["ChatRequest", !FindInMap [EnvironmentMapping, !Ref Environment, Name]]]
       Description: "Request body for sending a message to the chat bot"
       Schema:
         type: object
@@ -113,7 +120,7 @@ Resources:
     Properties:
       RestApiId: !Ref ChatBotApi
       ContentType: application/json
-      Name: !Sub "ChatResponse-${Environment}"
+      Name: !Join ["", ["ChatResponse", !FindInMap [EnvironmentMapping, !Ref Environment, Name]]]
       Description: "Response from the chat bot"
       Schema:
         type: object
@@ -160,7 +167,7 @@ Resources:
     Properties:
       RestApiId: !Ref ChatBotApi
       ContentType: application/json
-      Name: !Sub "ErrorResponse-${Environment}"
+      Name: !Join ["", ["ErrorResponse", !FindInMap [EnvironmentMapping, !Ref Environment, Name]]]
       Description: "Error response format"
       Schema:
         type: object
@@ -185,7 +192,7 @@ Resources:
     Type: AWS::ApiGateway::RequestValidator
     Properties:
       RestApiId: !Ref ChatBotApi
-      Name: !Sub "ChatRequestValidator-${Environment}"
+      Name: !Join ["", ["ChatRequestValidator", !FindInMap [EnvironmentMapping, !Ref Environment, Name]]]
       ValidateRequestBody: true
       ValidateRequestParameters: false
 
