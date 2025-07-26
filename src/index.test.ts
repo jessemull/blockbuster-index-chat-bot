@@ -1,5 +1,33 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { handler } from "./index";
+import { handler } from "./handler";
+import { getCorsHeaders } from "./utils/cors";
+import { getTapeyResponse } from "./services/claude";
+
+jest.mock("@anthropic-ai/sdk", () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => ({
+    messages: {
+      create: jest.fn().mockResolvedValue({
+        content: [
+          {
+            type: "text",
+            text: "Hey there, dude! That's totally awesome! The Blockbuster Index is this rad project that tracks consumer spending patterns and retail behavior across the United States. It's like having a crystal ball for understanding how people are shopping and how stores are doing! Pretty cool, right?",
+          },
+        ],
+      }),
+    },
+  })),
+}));
+
+jest.mock("./utils/cors");
+jest.mock("./services/claude");
+
+const mockGetCorsHeaders = getCorsHeaders as jest.MockedFunction<
+  typeof getCorsHeaders
+>;
+const mockGetTapeyResponse = getTapeyResponse as jest.MockedFunction<
+  typeof getTapeyResponse
+>;
 
 const getMockEvent = (
   httpMethod = "GET",
@@ -59,6 +87,18 @@ describe("Blockbuster Index Chat Bot Handler", () => {
     originalConsoleLog = console.log;
     console.error = jest.fn();
     console.log = jest.fn();
+
+    mockGetCorsHeaders.mockReturnValue({
+      "Access-Control-Allow-Origin": "https://www.blockbusterindex.com",
+      "Access-Control-Allow-Headers":
+        "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+      "Content-Type": "application/json",
+    });
+
+    mockGetTapeyResponse.mockResolvedValue({
+      message: "Hey there, dude! That's totally awesome!",
+    });
   });
 
   afterEach(() => {
@@ -72,7 +112,7 @@ describe("Blockbuster Index Chat Bot Handler", () => {
 
     expect(result.statusCode).toBe(200);
     expect(result.headers).toEqual({
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": "https://www.blockbusterindex.com",
       "Access-Control-Allow-Headers":
         "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
@@ -87,7 +127,7 @@ describe("Blockbuster Index Chat Bot Handler", () => {
 
     expect(result.statusCode).toBe(200);
     expect(result.headers).toEqual({
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": "https://www.blockbusterindex.com",
       "Access-Control-Allow-Headers":
         "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
@@ -111,7 +151,7 @@ describe("Blockbuster Index Chat Bot Handler", () => {
 
     expect(result.statusCode).toBe(200);
     expect(result.headers).toEqual({
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": "https://www.blockbusterindex.com",
       "Access-Control-Allow-Headers":
         "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
@@ -119,10 +159,10 @@ describe("Blockbuster Index Chat Bot Handler", () => {
     });
 
     const responseBody = JSON.parse(result.body!);
-    expect(responseBody.message).toContain('Hello! You said: "Hello bot!"');
-    expect(responseBody.message).toContain("Blockbuster Index Chat Bot");
+    expect(responseBody.message).toContain("Hey there, dude!");
     expect(responseBody.timestamp).toBeDefined();
     expect(responseBody.requestId).toBe("test-request-id");
+    expect(mockGetTapeyResponse).toHaveBeenCalledWith("Hello bot!");
   });
 
   it("should return 400 for POST request with empty message", async () => {
@@ -150,5 +190,117 @@ describe("Blockbuster Index Chat Bot Handler", () => {
     expect(result.statusCode).toBe(405);
     const responseBody = JSON.parse(result.body!);
     expect(responseBody.error).toBe("Method not allowed");
+  });
+
+  it("should handle POST request with null body", async () => {
+    const event = getMockEvent("POST", undefined);
+    const result = await handler(event);
+
+    expect(result.statusCode).toBe(400);
+    const responseBody = JSON.parse(result.body!);
+    expect(responseBody.error).toBe("Message is required");
+  });
+
+  it("should handle POST request with missing message property", async () => {
+    const event = getMockEvent("POST", JSON.stringify({}));
+    const result = await handler(event);
+
+    expect(result.statusCode).toBe(400);
+    const responseBody = JSON.parse(result.body!);
+    expect(responseBody.error).toBe("Message is required");
+  });
+
+  it("should handle POST request with whitespace-only message", async () => {
+    const event = getMockEvent("POST", JSON.stringify({ message: "   " }));
+    const result = await handler(event);
+
+    expect(result.statusCode).toBe(400);
+    const responseBody = JSON.parse(result.body!);
+    expect(responseBody.error).toBe("Message is required");
+  });
+
+  it("should handle Claude API error gracefully", async () => {
+    mockGetTapeyResponse.mockResolvedValue({
+      message:
+        "Sorry dude, I'm having some technical difficulties right now! Try again in a bit!",
+      error: "API Error",
+    });
+
+    const event = getMockEvent("POST", JSON.stringify({ message: "Hello" }));
+    const result = await handler(event);
+
+    expect(result.statusCode).toBe(200);
+    const responseBody = JSON.parse(result.body!);
+    expect(responseBody.message).toContain(
+      "Sorry dude, I'm having some technical difficulties",
+    );
+  });
+
+  it("should handle general error in handler", async () => {
+    mockGetTapeyResponse.mockRejectedValue(new Error("Unexpected error"));
+
+    const event = getMockEvent("POST", JSON.stringify({ message: "Hello" }));
+    const result = await handler(event);
+
+    expect(result.statusCode).toBe(500);
+    const responseBody = JSON.parse(result.body!);
+    expect(responseBody.error).toBe("Internal server error");
+    expect(console.error).toHaveBeenCalled();
+  });
+});
+
+describe("Barrel Exports", () => {
+  it("should export all constants", async () => {
+    const { ALLOWED_ORIGINS, CLAUDE_MODEL, MAX_TOKENS, TAPEY_SYSTEM_PROMPT } =
+      await import("./constants");
+    expect(ALLOWED_ORIGINS).toBeDefined();
+    expect(CLAUDE_MODEL).toBeDefined();
+    expect(MAX_TOKENS).toBeDefined();
+    expect(TAPEY_SYSTEM_PROMPT).toBeDefined();
+  });
+
+  it("should export all services", async () => {
+    const { getTapeyResponse } = await import("./services");
+    expect(getTapeyResponse).toBeDefined();
+  });
+
+  it("should export all utils", async () => {
+    const { getCorsHeaders } = await import("./utils");
+    expect(getCorsHeaders).toBeDefined();
+  });
+
+  it("should export everything from main index", async () => {
+    const mainExports = await import("./index");
+    expect(mainExports).toBeDefined();
+  });
+});
+
+describe("CORS Utils", () => {
+  it("should return correct CORS headers for allowed origin", () => {
+    const headers = getCorsHeaders("https://www.blockbusterindex.com");
+    expect(headers["Access-Control-Allow-Origin"]).toBe(
+      "https://www.blockbusterindex.com",
+    );
+  });
+
+  it("should return default CORS headers for disallowed origin", () => {
+    const headers = getCorsHeaders("https://malicious-site.com");
+    expect(headers["Access-Control-Allow-Origin"]).toBe(
+      "https://www.blockbusterindex.com",
+    );
+  });
+
+  it("should return default CORS headers for undefined origin", () => {
+    const headers = getCorsHeaders(undefined);
+    expect(headers["Access-Control-Allow-Origin"]).toBe(
+      "https://www.blockbusterindex.com",
+    );
+  });
+
+  it("should return default CORS headers for empty origin", () => {
+    const headers = getCorsHeaders("");
+    expect(headers["Access-Control-Allow-Origin"]).toBe(
+      "https://www.blockbusterindex.com",
+    );
   });
 });

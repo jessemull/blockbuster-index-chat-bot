@@ -12,6 +12,10 @@ Parameters:
   S3Key:
     Type: String
     Description: The S3 key for the lambda function zip file.
+  AnthropicApiKey:
+    Type: String
+    Description: Anthropic API key for Claude integration
+    NoEcho: true
 
 Resources:
   BlockbusterChatBotFunction:
@@ -31,6 +35,7 @@ Resources:
       Environment:
         Variables:
           ENVIRONMENT: !Ref Environment
+          ANTHROPIC_API_KEY: !Ref AnthropicApiKey
 
   LambdaPermissionGet:
     Type: AWS::Lambda::Permission
