@@ -16,6 +16,9 @@ Parameters:
   CertificateArn:
     Type: String
     Description: "ARN of the SSL certificate for the custom domain"
+  LambdaFunctionArn:
+    Type: String
+    Description: "ARN of the Lambda function to integrate with"
 
 Resources:
   ChatBotApi:
@@ -40,6 +43,32 @@ Resources:
       RestApiId: !Ref ChatBotApi
       ParentId: !Ref ApiResource
       PathPart: "chat"
+
+  # API Gateway Method for GET /chat
+  GetChatMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ChatBotApi
+      ResourceId: !Ref ChatResource
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunctionArn}/invocations"
+
+  # API Gateway Method for POST /chat
+  PostChatMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref ChatBotApi
+      ResourceId: !Ref ChatResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunctionArn}/invocations"
 
   OptionsChatMethod:
     Type: AWS::ApiGateway::Method
@@ -77,6 +106,8 @@ Resources:
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
+      - GetChatMethod
+      - PostChatMethod
       - OptionsChatMethod
     Properties:
       RestApiId: !Ref ChatBotApi

@@ -43,43 +43,7 @@ Resources:
         - ApiGatewayId: 
             Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
 
-  GetChatMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      RestApiId:
-        Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
-      ResourceId:
-        Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayChatResourceId-${Environment}"
-      HttpMethod: GET
-      AuthorizationType: NONE
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BlockbusterChatBotFunction.Arn}/invocations"
 
-  PostChatMethod:
-    Type: AWS::ApiGateway::Method
-    Properties:
-      RestApiId:
-        Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
-      ResourceId:
-        Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayChatResourceId-${Environment}"
-      HttpMethod: POST
-      AuthorizationType: NONE
-      Integration:
-        Type: AWS_PROXY
-        IntegrationHttpMethod: POST
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BlockbusterChatBotFunction.Arn}/invocations"
-
-  ApiDeployment:
-    Type: AWS::ApiGateway::Deployment
-    DependsOn:
-      - GetChatMethod
-      - PostChatMethod
-    Properties:
-      RestApiId:
-        Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
-      StageName: !Ref Environment
 
   MyLambdaVersion:
     Type: AWS::Lambda::Version
