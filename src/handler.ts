@@ -2,6 +2,7 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { ChatRequest, ChatResponse } from "./types";
 import { getCorsHeaders } from "./utils/cors";
 import { getTapeyResponse } from "./services/claude";
+import { buildConversationHistory } from "./services/history";
 
 export const handler = async (
   event: APIGatewayProxyEvent,
@@ -49,6 +50,7 @@ export const handler = async (
       const response: ChatResponse = {
         message:
           "Blockbuster Index Chat Bot is running! Send a POST request with a message to start chatting.",
+        history: [],
         timestamp,
         requestId,
       };
@@ -93,10 +95,22 @@ export const handler = async (
 
       // Get response from Tapey (Claude)...
 
-      const tapeyResponse = await getTapeyResponse(chatRequest.message);
+      const tapeyResponse = await getTapeyResponse(
+        chatRequest.message,
+        chatRequest.history,
+      );
+
+      // Build updated conversation history...
+
+      const updatedHistory = buildConversationHistory(
+        chatRequest.history || [],
+        chatRequest.message,
+        tapeyResponse.message,
+      );
 
       const response: ChatResponse = {
         message: tapeyResponse.message,
+        history: updatedHistory,
         timestamp,
         requestId,
       };

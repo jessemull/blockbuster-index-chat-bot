@@ -1,6 +1,9 @@
 module.exports = {
   collectCoverage: true,
-  collectCoverageFrom: ["**/*.{ts,tsx}"],
+  collectCoverageFrom: [
+    "**/*.{ts,tsx}",
+    "!src/index.ts", // Exclude barrel export file
+  ],
   coverageDirectory: "./coverage",
   coverageReporters: ["json", "lcov", "text", "clover"],
   coverageThreshold: {

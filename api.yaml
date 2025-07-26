@@ -1,0 +1,258 @@
+openapi: 3.0.3
+info:
+  title: Blockbuster Index Chat Bot API
+  description: |
+    A fun 90s-style chat bot API that provides information about the Blockbuster Index project.
+    The bot uses 90s vernacular and includes movie quotes while answering questions about retail data,
+    consumer spending patterns, and the Blockbuster Index project.
+  version: 1.0.0
+  contact:
+    name: Blockbuster Index Team
+    url: https://www.blockbusterindex.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api-dev.blockbusterindex.com
+    description: Development environment
+  - url: https://api.blockbusterindex.com
+    description: Production environment
+
+paths:
+  /api/chat:
+    get:
+      summary: Health check endpoint
+      description: Returns a health check message to verify the API is running
+      operationId: healthCheck
+      tags:
+        - Health
+      responses:
+        '200':
+          description: API is healthy and running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+              example:
+                message: "Blockbuster Index Chat Bot is running! Send a POST request with a message to start chatting."
+                history: []
+                timestamp: "2023-01-01T00:00:00Z"
+                requestId: "abc-123-def"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    post:
+      summary: Send a message to Tapey
+      description: |
+        Send a message to Tapey, the 90s-style chat bot. The bot will respond with information about
+        the Blockbuster Index, retail data, and consumer spending patterns, all while maintaining
+        a fun 90s personality with movie quotes.
+      operationId: sendMessage
+      tags:
+        - Chat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+            example:
+              message: "What is the Blockbuster Index?"
+              history: []
+      responses:
+        '200':
+          description: Successful response from Tapey
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+              example:
+                message: "Hey there! The Blockbuster Index is totally awesome - it's this rad project that tracks how people are spending their money and how retail stores are doing across the country. As Morpheus said in The Matrix, 'Unfortunately, no one can be told what the data is. You have to see it for yourself!'"
+                history:
+                  - role: "user"
+                    content: "What is the Blockbuster Index?"
+                    timestamp: "2023-01-01T00:00:00Z"
+                  - role: "assistant"
+                    content: "Hey there! The Blockbuster Index is totally awesome - it's this rad project that tracks how people are spending their money and how retail stores are doing across the country. As Morpheus said in The Matrix, 'Unfortunately, no one can be told what the data is. You have to see it for yourself!'"
+                    timestamp: "2023-01-01T00:00:01Z"
+                timestamp: "2023-01-01T00:00:01Z"
+                requestId: "abc-123-def"
+        '400':
+          description: Bad request - invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                emptyMessage:
+                  summary: Empty message
+                  value:
+                    error: "Message is required"
+                    timestamp: "2023-01-01T00:00:00Z"
+                    requestId: "abc-123-def"
+                invalidJson:
+                  summary: Invalid JSON
+                  value:
+                    error: "Invalid JSON in request body"
+                    timestamp: "2023-01-01T00:00:00Z"
+                    requestId: "abc-123-def"
+        '405':
+          description: Method not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    options:
+      summary: CORS preflight
+      description: Handles CORS preflight requests
+      operationId: corsPreflight
+      tags:
+        - CORS
+      responses:
+        '200':
+          description: CORS preflight successful
+          headers:
+            Access-Control-Allow-Origin:
+              description: Allowed origin for CORS
+              schema:
+                type: string
+                example: "*"
+            Access-Control-Allow-Methods:
+              description: Allowed HTTP methods
+              schema:
+                type: string
+                example: "GET,POST,OPTIONS"
+            Access-Control-Allow-Headers:
+              description: Allowed headers
+              schema:
+                type: string
+                example: "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
+
+components:
+  schemas:
+    ChatMessage:
+      type: object
+      description: A single message in the conversation history
+      required:
+        - role
+        - content
+      properties:
+        role:
+          type: string
+          enum: [user, assistant]
+          description: The role of the message sender
+          example: "user"
+        content:
+          type: string
+          description: The content of the message
+          example: "What is the Blockbuster Index?"
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of when the message was created
+          example: "2023-01-01T00:00:00Z"
+    
+    ChatRequest:
+      type: object
+      description: Request body for sending a message to the chat bot
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: The message to send to the chat bot
+          minLength: 1
+          example: "What is the Blockbuster Index?"
+        history:
+          type: array
+          description: Previous conversation history (optional, defaults to empty array)
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+          maxItems: 5
+          example: []
+        userId:
+          type: string
+          description: Optional user identifier for future use
+          example: "user123"
+    
+    ChatResponse:
+      type: object
+      description: Response from the chat bot
+      required:
+        - message
+        - history
+        - timestamp
+        - requestId
+      properties:
+        message:
+          type: string
+          description: Tapey's response message
+          example: "Hey there! The Blockbuster Index is totally awesome..."
+        history:
+          type: array
+          description: Updated conversation history (limited to 5 messages)
+          items:
+            $ref: '#/components/schemas/ChatMessage'
+          maxItems: 5
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of when the response was generated
+          example: "2023-01-01T00:00:01Z"
+        requestId:
+          type: string
+          description: Unique request identifier for tracking
+          example: "abc-123-def"
+    
+    ErrorResponse:
+      type: object
+      description: Error response format
+      required:
+        - error
+        - timestamp
+        - requestId
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: "Message is required"
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of when the error occurred
+          example: "2023-01-01T00:00:00Z"
+        requestId:
+          type: string
+          description: Unique request identifier for tracking
+          example: "abc-123-def"
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: API key for authentication (if enabled in the future)
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Chat
+    description: Chat bot interaction endpoints
+  - name: CORS
+    description: CORS-related endpoints
+
+externalDocs:
+  description: Blockbuster Index Project
+  url: https://www.blockbusterindex.com 
