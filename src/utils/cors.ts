@@ -7,7 +7,8 @@ export function getCorsHeaders(origin?: string) {
     : ALLOWED_ORIGINS[0];
 
   return {
-    "Access-Control-Allow-Origin": corsOrigin || ALLOWED_ORIGINS[0],
+    "Access-Control-Allow-Origin":
+      corsOrigin || "https://www.blockbusterindex.com",
     "Access-Control-Allow-Headers":
       "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
