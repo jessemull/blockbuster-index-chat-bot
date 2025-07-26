@@ -28,15 +28,7 @@ Resources:
       Description: "API Gateway for Blockbuster Index Chat Bot"
       EndpointConfiguration:
         Types:
-          - REGIONAL
-
-  # Associate WAF with API Gateway
-  ApiGatewayWAFAssociation:
-    Type: AWS::WAFv2::WebACLAssociation
-    Properties:
-      ResourceArn: !Sub "arn:${AWS::Partition}:apigateway:${AWS::Region}::/restapis/${ChatBotApi}/stages/${Environment}"
-      WebACLArn:
-        Fn::ImportValue: !Sub "BlockbusterChatBotWebACLArn-${Environment}"
+          - EDGE
 
   ApiResource:
     Type: AWS::ApiGateway::Resource
@@ -52,7 +44,6 @@ Resources:
       ParentId: !Ref ApiResource
       PathPart: "chat"
 
-  # API Gateway Method for GET /chat
   GetChatMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -65,7 +56,6 @@ Resources:
         IntegrationHttpMethod: POST
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:blockbuster-index-chat-bot-${Environment}/invocations"
 
-  # API Gateway Method for POST /chat
   PostChatMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -107,13 +97,6 @@ Resources:
             method.response.header.Access-Control-Allow-Methods: true
             method.response.header.Access-Control-Allow-Origin: true
 
-  ApiStage:
-    Type: AWS::ApiGateway::Stage
-    Properties:
-      RestApiId: !Ref ChatBotApi
-      StageName: !Ref Environment
-      DeploymentId: !Ref ApiDeployment
-
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
@@ -122,6 +105,8 @@ Resources:
       - OptionsChatMethod
     Properties:
       RestApiId: !Ref ChatBotApi
+      StageName: !Ref Environment
+      Description: !Sub "Deployment for ${Environment} environment"
 
   CustomDomainName:
     Type: AWS::ApiGateway::DomainName
@@ -136,7 +121,7 @@ Resources:
   BasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
     DependsOn:
-      - ApiStage
+      - ApiDeployment
     Properties:
       DomainName: !Ref CustomDomainName
       RestApiId: !Ref ChatBotApi
@@ -144,19 +129,20 @@ Resources:
 
   ChatBotUsagePlan:
     Type: AWS::ApiGateway::UsagePlan
+    DependsOn: ApiDeployment
     Properties:
       UsagePlanName: !Sub "blockbuster-index-chat-bot-usage-plan-${Environment}"
       Description: "Usage plan for Blockbuster Index Chat Bot API with rate limiting"
       Throttle:
-        RateLimit: 5 # 5 requests per second
-        BurstLimit: 10 # 10 requests burst
+        RateLimit: 5
+        BurstLimit: 10
       Quota:
-        Limit: 1000 # 1,000 requests per day
+        Limit: 1000
         Period: DAY
       ApiStages:
         - ApiId: !Ref ChatBotApi
           Stage: !Ref Environment
-          
+
 Outputs:
   ApiGatewayId:
     Description: "API Gateway ID"
