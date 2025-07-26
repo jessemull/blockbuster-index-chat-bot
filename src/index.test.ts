@@ -1,5 +1,21 @@
 import { APIGatewayProxyEvent } from "aws-lambda";
-import { handler } from "./index";
+import { handler } from "./handler";
+
+jest.mock("@anthropic-ai/sdk", () => ({
+  __esModule: true,
+  default: jest.fn().mockImplementation(() => ({
+    messages: {
+      create: jest.fn().mockResolvedValue({
+        content: [
+          {
+            type: "text",
+            text: "Hey there, dude! That's totally awesome! The Blockbuster Index is this rad project that tracks consumer spending patterns and retail behavior across the United States. It's like having a crystal ball for understanding how people are shopping and how stores are doing! Pretty cool, right?",
+          },
+        ],
+      }),
+    },
+  })),
+}));
 
 const getMockEvent = (
   httpMethod = "GET",
@@ -72,7 +88,7 @@ describe("Blockbuster Index Chat Bot Handler", () => {
 
     expect(result.statusCode).toBe(200);
     expect(result.headers).toEqual({
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": "https://www.blockbusterindex.com",
       "Access-Control-Allow-Headers":
         "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
@@ -87,7 +103,7 @@ describe("Blockbuster Index Chat Bot Handler", () => {
 
     expect(result.statusCode).toBe(200);
     expect(result.headers).toEqual({
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": "https://www.blockbusterindex.com",
       "Access-Control-Allow-Headers":
         "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
@@ -111,7 +127,7 @@ describe("Blockbuster Index Chat Bot Handler", () => {
 
     expect(result.statusCode).toBe(200);
     expect(result.headers).toEqual({
-      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Origin": "https://www.blockbusterindex.com",
       "Access-Control-Allow-Headers":
         "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
@@ -119,8 +135,8 @@ describe("Blockbuster Index Chat Bot Handler", () => {
     });
 
     const responseBody = JSON.parse(result.body!);
-    expect(responseBody.message).toContain('Hello! You said: "Hello bot!"');
-    expect(responseBody.message).toContain("Blockbuster Index Chat Bot");
+    expect(responseBody.message).toContain("Hey there, dude!");
+    expect(responseBody.message).toContain("Blockbuster Index");
     expect(responseBody.timestamp).toBeDefined();
     expect(responseBody.requestId).toBe("test-request-id");
   });

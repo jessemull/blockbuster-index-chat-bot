@@ -18,7 +18,7 @@ Parameters:
     Description: "ARN of the SSL certificate for the custom domain"
 
 Conditions:
-  IsProd: !Equals [ !Ref Environment, "prod" ]
+  IsProd: !Equals [!Ref Environment, "prod"]
 
 Resources:
   ChatBotApi:
@@ -29,6 +29,14 @@ Resources:
       EndpointConfiguration:
         Types:
           - REGIONAL
+
+  # Associate WAF with API Gateway
+  ApiGatewayWAFAssociation:
+    Type: AWS::WAFv2::WebACLAssociation
+    Properties:
+      ResourceArn: !Sub "arn:${AWS::Partition}:apigateway:${AWS::Region}::/restapis/${ChatBotApi}/stages/${Environment}"
+      WebACLArn:
+        Fn::ImportValue: !Sub "BlockbusterChatBotWebACLArn-${Environment}"
 
   ApiResource:
     Type: AWS::ApiGateway::Resource
@@ -86,7 +94,7 @@ Resources:
             ResponseParameters:
               method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
               method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
-              method.response.header.Access-Control-Allow-Origin: !If 
+              method.response.header.Access-Control-Allow-Origin: !If
                 - IsProd
                 - "'https://www.blockbusterindex.com'"
                 - "'https://www.dev.blockbusterindex.com'"
@@ -134,39 +142,70 @@ Resources:
       RestApiId: !Ref ChatBotApi
       Stage: !Ref Environment
 
+  ChatBotUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    Properties:
+      UsagePlanName: !Sub "blockbuster-index-chat-bot-usage-plan-${Environment}"
+      Description: "Usage plan for Blockbuster Index Chat Bot API with rate limiting"
+      Throttle:
+        RateLimit: 5 # 5 requests per second
+        BurstLimit: 10 # 10 requests burst
+      Quota:
+        Limit: 1000 # 1,000 requests per day
+        Period: DAY
+      ApiStages:
+        - ApiId: !Ref ChatBotApi
+          Stage: !Ref Environment
+
+  # API Key for the usage plan (optional - you can remove this if you don't want API keys)
+  ChatBotApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    Properties:
+      Name: !Sub "blockbuster-index-chat-bot-api-key-${Environment}"
+      Description: "API Key for Blockbuster Index Chat Bot"
+      Enabled: true
+
+  # Associate API Key with Usage Plan
+  ApiKeyUsagePlan:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties:
+      KeyId: !Ref ChatBotApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref ChatBotUsagePlan
+
 Outputs:
   ApiGatewayId:
     Description: "API Gateway ID"
     Value: !Ref ChatBotApi
     Export:
       Name: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
-  
+
   ApiGatewayChatResourceId:
     Description: "API Gateway Chat Resource ID"
     Value: !Ref ChatResource
     Export:
       Name: !Sub "BlockbusterChatBotApiGatewayChatResourceId-${Environment}"
-  
+
   ApiGatewayUrl:
     Description: "API Gateway URL"
     Value: !Sub "https://${ChatBotApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}"
     Export:
       Name: !Sub "BlockbusterChatBotApiUrl-${Environment}"
-  
+
   CustomDomainUrl:
     Description: "Custom domain URL"
     Value: !Sub "https://${DomainName}/chat"
     Export:
       Name: !Sub "BlockbusterChatBotCustomDomainUrl-${Environment}"
-  
+
   CustomDomainRegionalDomainName:
     Description: "Regional domain name for the custom domain"
     Value: !GetAtt CustomDomainName.RegionalDomainName
     Export:
       Name: !Sub "BlockbusterChatBotCustomDomainRegionalDomainName-${Environment}"
-  
+
   CustomDomainRegionalHostedZoneId:
     Description: "Regional hosted zone ID for the custom domain"
     Value: !GetAtt CustomDomainName.RegionalHostedZoneId
     Export:
-      Name: !Sub "BlockbusterChatBotCustomDomainRegionalHostedZoneId-${Environment}" 
+      Name: !Sub "BlockbusterChatBotCustomDomainRegionalHostedZoneId-${Environment}"
