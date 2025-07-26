@@ -55,6 +55,7 @@ jobs:
             --parameters \
               "ParameterKey=S3Key,ParameterValue=blockbuster-index-chat-bot/${{ github.event.inputs.s3_zip_file }}" \
               "ParameterKey=Environment,ParameterValue=${{ github.event.inputs.environment }}" \
+              "ParameterKey=AnthropicApiKey,ParameterValue=${{ secrets.ANTHROPIC_API_KEY }}" \
             --change-set-name $CHANGE_SET_NAME \
             --change-set-type $CHANGE_SET_TYPE \
             --capabilities CAPABILITY_NAMED_IAM \
