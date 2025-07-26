@@ -3,7 +3,6 @@ import { handler } from "./handler";
 import { getCorsHeaders } from "./utils/cors";
 import { getTapeyResponse } from "./services/claude";
 
-// Mock the Anthropic SDK
 jest.mock("@anthropic-ai/sdk", () => ({
   __esModule: true,
   default: jest.fn().mockImplementation(() => ({
@@ -20,7 +19,6 @@ jest.mock("@anthropic-ai/sdk", () => ({
   })),
 }));
 
-// Mock the utils and services
 jest.mock("./utils/cors");
 jest.mock("./services/claude");
 
@@ -90,7 +88,6 @@ describe("Blockbuster Index Chat Bot Handler", () => {
     console.error = jest.fn();
     console.log = jest.fn();
 
-    // Setup default mocks
     mockGetCorsHeaders.mockReturnValue({
       "Access-Control-Allow-Origin": "https://www.blockbusterindex.com",
       "Access-Control-Allow-Headers":
@@ -252,7 +249,6 @@ describe("Blockbuster Index Chat Bot Handler", () => {
   });
 });
 
-// Test barrel exports
 describe("Barrel Exports", () => {
   it("should export all constants", async () => {
     const { ALLOWED_ORIGINS, CLAUDE_MODEL, MAX_TOKENS, TAPEY_SYSTEM_PROMPT } =
@@ -279,7 +275,6 @@ describe("Barrel Exports", () => {
   });
 });
 
-// Test CORS utility
 describe("CORS Utils", () => {
   it("should return correct CORS headers for allowed origin", () => {
     const headers = getCorsHeaders("https://www.blockbusterindex.com");

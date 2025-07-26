@@ -157,21 +157,7 @@ Resources:
         - ApiId: !Ref ChatBotApi
           Stage: !Ref Environment
 
-  # API Key for the usage plan (optional - you can remove this if you don't want API keys)
-  ChatBotApiKey:
-    Type: AWS::ApiGateway::ApiKey
-    Properties:
-      Name: !Sub "blockbuster-index-chat-bot-api-key-${Environment}"
-      Description: "API Key for Blockbuster Index Chat Bot"
-      Enabled: true
 
-  # Associate API Key with Usage Plan
-  ApiKeyUsagePlan:
-    Type: AWS::ApiGateway::UsagePlanKey
-    Properties:
-      KeyId: !Ref ChatBotApiKey
-      KeyType: API_KEY
-      UsagePlanId: !Ref ChatBotUsagePlan
 
 Outputs:
   ApiGatewayId:
