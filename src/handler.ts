@@ -100,7 +100,8 @@ export const handler = async (
         chatRequest.history,
       );
 
-      // Build updated conversation history
+      // Build updated conversation history...
+
       const updatedHistory = buildConversationHistory(
         chatRequest.history || [],
         chatRequest.message,
