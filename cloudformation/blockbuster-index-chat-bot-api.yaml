@@ -16,9 +16,6 @@ Parameters:
   CertificateArn:
     Type: String
     Description: "ARN of the SSL certificate for the custom domain"
-  LambdaFunctionArn:
-    Type: String
-    Description: "ARN of the Lambda function to integrate with"
 
 Resources:
   ChatBotApi:
@@ -55,7 +52,7 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunctionArn}/invocations"
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:blockbuster-index-chat-bot-${Environment}/invocations"
 
   # API Gateway Method for POST /chat
   PostChatMethod:
@@ -68,7 +65,7 @@ Resources:
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunctionArn}/invocations"
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:blockbuster-index-chat-bot-${Environment}/invocations"
 
   OptionsChatMethod:
     Type: AWS::ApiGateway::Method

@@ -38,10 +38,7 @@ Resources:
       FunctionName: !Ref BlockbusterChatBotFunction
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub 
-        - "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayId}/*"
-        - ApiGatewayId: 
-            Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/GET/*"
 
 
 
