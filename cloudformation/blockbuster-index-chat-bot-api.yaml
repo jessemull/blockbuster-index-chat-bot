@@ -156,9 +156,7 @@ Resources:
       ApiStages:
         - ApiId: !Ref ChatBotApi
           Stage: !Ref Environment
-
-
-
+          
 Outputs:
   ApiGatewayId:
     Description: "API Gateway ID"
