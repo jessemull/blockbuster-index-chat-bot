@@ -87,7 +87,7 @@ Resources:
               method.response.header.Access-Control-Allow-Origin: !If
                 - IsProd
                 - "'https://www.blockbusterindex.com'"
-                - "'https://www.dev.blockbusterindex.com'"
+                - "'*'"
             ResponseTemplates:
               application/json: ""
       MethodResponses:

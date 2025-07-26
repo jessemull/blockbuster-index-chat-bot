@@ -10,9 +10,24 @@ export const handler = async (
 
   console.log("Received event:", JSON.stringify(event, null, 2));
 
-  const corsHeaders = getCorsHeaders(
-    event.headers.Origin || event.headers.origin,
-  );
+  // Extract origin from Origin header or Referer header...
+
+  const origin = event.headers.Origin || event.headers.origin;
+  const referer = event.headers.Referer || event.headers.referer;
+
+  // If no origin but we have a referer, extract origin from referer...
+
+  let requestOrigin = origin;
+  if (!requestOrigin && referer) {
+    const match = referer.match(/^(https?:\/\/[^\/]+)/);
+    if (match) {
+      requestOrigin = match[1];
+    } else {
+      requestOrigin = referer;
+    }
+  }
+
+  const corsHeaders = getCorsHeaders(requestOrigin);
 
   // Handle OPTIONS request for CORS preflight...
 
