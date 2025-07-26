@@ -32,7 +32,6 @@ Resources:
         Variables:
           ENVIRONMENT: !Ref Environment
 
-  # Lambda permission for API Gateway
   LambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -44,7 +43,6 @@ Resources:
         - ApiGatewayId: 
             Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
 
-  # API Gateway Method for GET /api/chat
   GetChatMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -59,7 +57,6 @@ Resources:
         IntegrationHttpMethod: POST
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BlockbusterChatBotFunction.Arn}/invocations"
 
-  # API Gateway Method for POST /api/chat
   PostChatMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -74,7 +71,6 @@ Resources:
         IntegrationHttpMethod: POST
         Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BlockbusterChatBotFunction.Arn}/invocations"
 
-  # API Gateway Deployment (to apply the new methods)
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:

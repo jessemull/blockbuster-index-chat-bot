@@ -11,14 +11,13 @@ Parameters:
     ConstraintDescription: "Must be either 'dev' or 'prod'."
   DomainName:
     Type: String
-    Default: "www.blockbusterindex.com"
     Description: "The custom domain name for the API Gateway"
+    Default: "api-dev.blockbusterindex.com"
   CertificateArn:
     Type: String
     Description: "ARN of the SSL certificate for the custom domain"
 
 Resources:
-  # API Gateway REST API
   ChatBotApi:
     Type: AWS::ApiGateway::RestApi
     Properties:
@@ -28,7 +27,6 @@ Resources:
         Types:
           - REGIONAL
 
-  # API Gateway Resource for /api
   ApiResource:
     Type: AWS::ApiGateway::Resource
     Properties:
@@ -36,7 +34,6 @@ Resources:
       ParentId: !GetAtt ChatBotApi.RootResourceId
       PathPart: "api"
 
-  # API Gateway Resource for /api/chat
   ChatResource:
     Type: AWS::ApiGateway::Resource
     Properties:
@@ -44,7 +41,6 @@ Resources:
       ParentId: !Ref ApiResource
       PathPart: "chat"
 
-  # API Gateway Method for OPTIONS /api/chat (CORS)
   OptionsChatMethod:
     Type: AWS::ApiGateway::Method
     Properties:
@@ -71,16 +67,20 @@ Resources:
             method.response.header.Access-Control-Allow-Methods: true
             method.response.header.Access-Control-Allow-Origin: true
 
-  # API Gateway Deployment
+  ApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      RestApiId: !Ref ChatBotApi
+      StageName: !Ref Environment
+      DeploymentId: !Ref ApiDeployment
+
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment
     DependsOn:
       - OptionsChatMethod
     Properties:
       RestApiId: !Ref ChatBotApi
-      StageName: !Ref Environment
 
-  # Custom Domain Name
   CustomDomainName:
     Type: AWS::ApiGateway::DomainName
     Properties:
@@ -91,9 +91,10 @@ Resources:
           - REGIONAL
       SecurityPolicy: TLS_1_2
 
-  # API Gateway Base Path Mapping
   BasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
+    DependsOn:
+      - ApiStage
     Properties:
       DomainName: !Ref CustomDomainName
       RestApiId: !Ref ChatBotApi
@@ -120,7 +121,7 @@ Outputs:
   
   CustomDomainUrl:
     Description: "Custom domain URL"
-    Value: !Sub "https://${DomainName}/api/chat"
+    Value: !Sub "https://${DomainName}/chat"
     Export:
       Name: !Sub "BlockbusterChatBotCustomDomainUrl-${Environment}"
   
