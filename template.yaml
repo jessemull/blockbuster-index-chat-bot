@@ -26,8 +26,60 @@ Resources:
         S3Bucket:
           Fn::ImportValue: !Sub "BlockbusterChatBotBucketName-${Environment}"
         S3Key: !Ref S3Key
-      Timeout: 5
-      MemorySize: 128
+      Timeout: 30
+      MemorySize: 256
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref BlockbusterChatBotFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 
+        - "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGatewayId}/*"
+        - ApiGatewayId: 
+            Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
+
+  GetChatMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId:
+        Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
+      ResourceId:
+        Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayChatResourceId-${Environment}"
+      HttpMethod: GET
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BlockbusterChatBotFunction.Arn}/invocations"
+
+  PostChatMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId:
+        Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
+      ResourceId:
+        Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayChatResourceId-${Environment}"
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${BlockbusterChatBotFunction.Arn}/invocations"
+
+  ApiDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - GetChatMethod
+      - PostChatMethod
+    Properties:
+      RestApiId:
+        Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
+      StageName: !Ref Environment
 
   MyLambdaVersion:
     Type: AWS::Lambda::Version
