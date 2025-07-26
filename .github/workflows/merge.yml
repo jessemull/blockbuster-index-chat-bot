@@ -112,6 +112,7 @@ jobs:
             --parameters \
               "ParameterKey=S3Key,ParameterValue=blockbuster-index-chat-bot/${ARTIFACT_NAME}" \
               "ParameterKey=Environment,ParameterValue=${ENVIRONMENT}" \
+              "ParameterKey=AnthropicApiKey,ParameterValue=${{ secrets.ANTHROPIC_API_KEY }}" \
             --change-set-name $CHANGE_SET_NAME \
             --change-set-type $CHANGE_SET_TYPE \
             --capabilities CAPABILITY_NAMED_IAM \
