@@ -38,7 +38,7 @@ Resources:
       FunctionName: !Ref BlockbusterChatBotFunction
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/GET/*"
+      SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:*/GET/*"
 
   LambdaPermissionPost:
     Type: AWS::Lambda::Permission
@@ -46,9 +46,7 @@ Resources:
       FunctionName: !Ref BlockbusterChatBotFunction
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/POST/*"
-
-
+      SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:*/POST/*"
 
   MyLambdaVersion:
     Type: AWS::Lambda::Version
