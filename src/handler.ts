@@ -1,5 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { ChatRequest, ChatResponse } from "./types";
+import { MAX_MESSAGE_LENGTH } from "./constants";
 import { getCorsHeaders } from "./utils/cors";
 import { getTapeyResponse } from "./services/claude";
 import { buildConversationHistory } from "./services/history";
@@ -7,16 +8,10 @@ import { buildConversationHistory } from "./services/history";
 export const handler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  // Log the incoming request for debugging...
-
   console.log("Received event:", JSON.stringify(event, null, 2));
-
-  // Extract origin from Origin header or Referer header...
 
   const origin = event.headers.Origin || event.headers.origin;
   const referer = event.headers.Referer || event.headers.referer;
-
-  // If no origin but we have a referer, extract origin from referer...
 
   let requestOrigin = origin;
   if (!requestOrigin && referer) {
@@ -30,8 +25,6 @@ export const handler = async (
 
   const corsHeaders = getCorsHeaders(requestOrigin);
 
-  // Handle OPTIONS request for CORS preflight...
-
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 200,
@@ -43,8 +36,6 @@ export const handler = async (
   try {
     const requestId = event.requestContext.requestId;
     const timestamp = new Date().toISOString();
-
-    // Handle GET request (health check)...
 
     if (event.httpMethod === "GET") {
       const response: ChatResponse = {
@@ -61,8 +52,6 @@ export const handler = async (
         body: JSON.stringify(response),
       };
     }
-
-    // Handle POST request (chat)...
 
     if (event.httpMethod === "POST") {
       let chatRequest: ChatRequest;
@@ -93,14 +82,22 @@ export const handler = async (
         };
       }
 
-      // Get response from Tapey (Claude)...
+      if (chatRequest.message.length > MAX_MESSAGE_LENGTH) {
+        return {
+          statusCode: 400,
+          headers: corsHeaders,
+          body: JSON.stringify({
+            error: `Message exceeds maximum length of ${MAX_MESSAGE_LENGTH} characters`,
+            timestamp,
+            requestId,
+          }),
+        };
+      }
 
       const tapeyResponse = await getTapeyResponse(
         chatRequest.message,
         chatRequest.history,
       );
-
-      // Build updated conversation history...
 
       const updatedHistory = buildConversationHistory(
         chatRequest.history || [],

@@ -32,7 +32,7 @@ Resources:
       Description: "API Gateway for Blockbuster Index Chat Bot"
       EndpointConfiguration:
         Types:
-          - EDGE
+          - REGIONAL
 
   ApiResource:
     Type: AWS::ApiGateway::Resource
@@ -262,7 +262,7 @@ Resources:
             ResponseParameters:
               method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
               method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
-              method.response.header.Access-Control-Allow-Origin: "'*'"
+              method.response.header.Access-Control-Allow-Origin: "'https://www.blockbusterindex.com'"
             ResponseTemplates:
               application/json: ""
       MethodResponses:

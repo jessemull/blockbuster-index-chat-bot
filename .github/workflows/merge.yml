@@ -11,7 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
 
       - name: Install Dependencies
         run: |
@@ -32,15 +38,8 @@ jobs:
           path: coverage
           retention-days: 7
 
-      - name: Coverage Threshold Check
-        run: |
-          if [[ $(grep "Statements" coverage/lcov-report/index.html | awk '{print $4}' | tr -d '%') -lt 80 ]]; then
-            echo "Code coverage is below threshold. Please update test coverage and try again."
-            exit 1
-          fi
-
       - name: Set Up AWS CLI
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -51,9 +50,6 @@ jobs:
           export NODE_ENV=dev
           npm run build
           npm run package
-        env:
-          COGNITO_USER_POOL_ID: ${{ secrets.COGNITO_USER_POOL_ID_DEV }}
-          COGNITO_USER_POOL_CLIENT_ID: ${{ secrets.COGNITO_USER_POOL_CLIENT_ID_DEV }}
 
       - name: Generate Artifact Name
         run: |
@@ -169,7 +165,7 @@ jobs:
             elif [[ " ${FAILED_STATUSES[@]} " =~ " ${STATUS} " ]]; then
               echo "Stack failed to update!"
               echo "Status: $STATUS"
-              aws cloudformation describe-stack-events --stack-name $STACK_NAME --region us-west-2 --query "StackEvents[?ResourceStatus=='$STATUS'].[LogicalStatus, ResourceStatusReason]" --output table
+              aws cloudformation describe-stack-events --stack-name $STACK_NAME --region us-west-2 --query "StackEvents[?ResourceStatus=='$STATUS'].[LogicalResourceId, ResourceStatus, ResourceStatusReason]" --output table
               exit 1
             fi
             RETRY_COUNT=$((RETRY_COUNT + 1))

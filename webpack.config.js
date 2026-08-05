@@ -41,12 +41,11 @@ module.exports = {
       },
     ],
   },
-  mode: "none",
+  mode: "production",
   optimization: {
     minimize: true,
     minimizer: [
       new TerserPlugin({
-        exclude: /index\.ts$/,
         terserOptions: {
           compress: {
             drop_console: true,

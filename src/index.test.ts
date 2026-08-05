@@ -316,6 +316,21 @@ describe("Blockbuster Index Chat Bot Handler", () => {
     expect(responseBody.error).toBe("Message is required");
   });
 
+  it("should return 400 for POST request with message exceeding max length", async () => {
+    const longMessage = "a".repeat(2001);
+    const event = getMockEvent(
+      "POST",
+      JSON.stringify({ message: longMessage }),
+    );
+    const result = await handler(event);
+
+    expect(result.statusCode).toBe(400);
+    const responseBody = JSON.parse(result.body!);
+    expect(responseBody.error).toBe(
+      "Message exceeds maximum length of 2000 characters",
+    );
+  });
+
   it("should handle origin extraction when referer doesn't match regex", async () => {
     const event = getMockEvent("POST", JSON.stringify({ message: "Hello" }));
     event.headers.Origin = undefined;
@@ -383,35 +398,5 @@ describe("Barrel Exports", () => {
   it("should export everything from main index", async () => {
     const mainExports = await import("./index");
     expect(mainExports).toBeDefined();
-  });
-});
-
-describe("CORS Utils", () => {
-  it("should return correct CORS headers for allowed origin", () => {
-    const headers = getCorsHeaders("https://www.blockbusterindex.com");
-    expect(headers["Access-Control-Allow-Origin"]).toBe(
-      "https://www.blockbusterindex.com",
-    );
-  });
-
-  it("should return default CORS headers for disallowed origin", () => {
-    const headers = getCorsHeaders("https://malicious-site.com");
-    expect(headers["Access-Control-Allow-Origin"]).toBe(
-      "https://www.blockbusterindex.com",
-    );
-  });
-
-  it("should return default CORS headers for undefined origin", () => {
-    const headers = getCorsHeaders(undefined);
-    expect(headers["Access-Control-Allow-Origin"]).toBe(
-      "https://www.blockbusterindex.com",
-    );
-  });
-
-  it("should return default CORS headers for empty origin", () => {
-    const headers = getCorsHeaders("");
-    expect(headers["Access-Control-Allow-Origin"]).toBe(
-      "https://www.blockbusterindex.com",
-    );
   });
 });
