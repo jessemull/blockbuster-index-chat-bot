@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: "Choose environment (test/production)"
+        description: "Choose environment (dev/prod)"
         required: true
         default: "test"
         type: choice
@@ -156,8 +156,8 @@ jobs:
       - name: Monitor CloudFormation Stack Status
         if: env.no_changes == 'false'
         run: |
-          DONE_STATUSES=("CREATE_COMPLETE" "UPDATE_COMPLETE" "ROLLBACK_COMPLETE" "UPDATE_ROLLBACK_COMPLETE" "DELETE_COMPLETE")
-          FAILED_STATUSES=("CREATE_FAILED" "UPDATE_FAILED" "ROLLBACK_FAILED" "DELETE_FAILED" "UPDATE_ROLLBACK_FAILED" "ROLLBACK_IN_PROGRESS" "DELETE_IN_PROGRESS")
+          DONE_STATUSES=("CREATE_COMPLETE" "UPDATE_COMPLETE" "DELETE_COMPLETE")
+          FAILED_STATUSES=("CREATE_FAILED" "UPDATE_FAILED" "ROLLBACK_FAILED" "DELETE_FAILED" "UPDATE_ROLLBACK_FAILED" "ROLLBACK_COMPLETE" "UPDATE_ROLLBACK_COMPLETE" "ROLLBACK_IN_PROGRESS" "DELETE_IN_PROGRESS")
           STACK_NAME="blockbuster-index-chat-bot-stack-${{ github.event.inputs.environment }}"
           MAX_RETRIES=30
           RETRY_COUNT=0

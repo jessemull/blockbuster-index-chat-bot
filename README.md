@@ -51,8 +51,8 @@ The **Blockbuster Index Chat Bot** provides an engaging way for users to interac
 - **Conversation History**: Maintains context across multiple messages (limited to 5 messages for cost control).
 - **CORS Support**: Full CORS support for web integration.
 - **Health Check**: Built-in health check endpoint for monitoring.
-- **Error Handling**: Comprehensive error handling with structured responses.
-- **Request Validation**: API Gateway models ensure proper request/response validation.
+- **Error Handling**: Comprehensive error handling with structured responses, including 502 for upstream Claude failures.
+- **Request Validation**: API Gateway models and Lambda checks ensure proper request/response validation (max 2000 characters).
 
 ### Conversation Flow
 
@@ -98,12 +98,13 @@ The chat bot uses **Anthropic's Claude 3 Haiku** model for natural language proc
 ### Model Configuration
 
 - **Model**: `claude-3-haiku-20240307`
-- **Max Tokens**: 1000 (configurable for cost control)
+- **Max Tokens**: 500 (configurable for cost control)
 - **Temperature**: Default (balanced creativity and consistency)
 
 ### Conversation Management
 
 - **History Limit**: Maximum 5 messages to control costs and maintain performance.
+- **Message Length Limit**: Incoming messages capped at 2000 characters.
 - **Context Preservation**: Previous conversation context is maintained across requests.
 - **Role-based Messages**: Clear distinction between user and assistant messages.
 - **Timestamp Tracking**: All messages include ISO 8601 timestamps for tracking.
@@ -114,8 +115,10 @@ The chat bot implements several strategies to manage costs effectively while mai
 
 ### Token Management
 
-- **Max Tokens**: Limited to 1000 tokens per response to control API costs.
+- **Max Tokens**: Limited to 500 tokens per response to control API costs.
 - **History Truncation**: Conversation history limited to 5 messages maximum.
+- **Message Length Limit**: Requests capped at 2000 characters.
+- **Stage Throttling**: API Gateway stage limits of 5 requests/second (burst 10).
 - **Efficient Prompting**: Optimized system prompt to reduce token usage.
 - **Response Length**: Balanced responses that are informative but concise.
 
@@ -187,7 +190,7 @@ The **Blockbuster Index Chat Bot** is built using modern serverless technologies
 
 - **AWS S3**: Object storage for Lambda deployment packages with versioning and lifecycle management.
 
-- **AWS CloudWatch**: Provides logging and monitoring capabilities with structured JSON logging and performance metrics.
+- **AWS CloudWatch**: Provides logging and monitoring for Lambda invocations and errors.
 
 - **Anthropic Claude AI**: Advanced language model for natural conversation and response generation with 90s personality.
 
@@ -204,8 +207,6 @@ The **Blockbuster Index Chat Bot** is built using modern serverless technologies
 - **Commitizen**: A tool for enforcing a standardized commit message format, improving version control history and making collaboration more structured.
 
 - **Husky & Lint-Staged**: Git hooks that ensure code quality by running linting and formatting before commits.
-
-- **AWS SDK v3**: Modern AWS SDK for JavaScript that provides type-safe access to AWS services.
 
 This tech stack ensures that the **Blockbuster Index Chat Bot** remains performant, secure, and easily maintainable while leveraging serverless infrastructure for scalability and cost-effectiveness.
 
@@ -355,20 +356,18 @@ Coverage thresholds are enforced at **80%** for all metrics. The build will fail
 
 ## Error & Performance Monitoring
 
-This project uses **AWS CloudWatch** for server-side error and performance monitoring with structured logging.
+This project uses **AWS CloudWatch** for server-side error and performance monitoring.
 
 ### Configuration
 
-CloudWatch logging is configured with environment-specific settings. Logs are sent to CloudWatch with structured JSON formatting for better parsing and analysis.
+Lambda logs are written to CloudWatch Logs. Request metadata (request ID, method, path, origin) is logged without full event payloads.
 
 ### CloudWatch Logging
 
-The Lambda function uses structured logging with the following features:
+The Lambda function uses CloudWatch logging with the following features:
 
-- **JSON-formatted logs** for better parsing and analysis.
-- **Performance metrics** for tracking response times and token usage.
-- **Request context** for debugging and monitoring.
-- **Error context** for debugging and monitoring.
+- **Request metadata** for debugging without logging message content.
+- **Error context** via `console.error` retained in production builds.
 - **CloudWatch integration** for centralized log management.
 
 ## Environment Variables
@@ -379,6 +378,8 @@ The following environment variables are used by the Blockbuster Index Chat Bot:
 | ------------------- | -------------------------------------- | -------- | ------- |
 | `ENVIRONMENT`       | The deployment environment (dev/prod)  | Yes      | -       |
 | `ANTHROPIC_API_KEY` | Anthropic API key for Claude AI access | Yes      | -       |
+
+For local bastion access, copy [`.env.example`](.env.example) to `.env` and set `SSH_HOST`, `SSH_PRIVATE_KEY_PATH`, and `SSH_USER`.
 
 ### Environment-Specific Configuration
 
@@ -472,9 +473,10 @@ The API Gateway is configured with comprehensive features:
 
 - **Custom Domain**: Environment-specific custom domains with SSL certificates
 - **Request Validation**: API Gateway models ensure proper request/response validation
-- **CORS Support**: Full CORS configuration for web integration
-- **Usage Plans**: Rate limiting and quota management
-- **Method Configuration**: GET, POST, and OPTIONS methods with proper integration
+- **CORS Support**: Dynamic CORS allowlist handled by Lambda (including OPTIONS)
+- **Stage Throttling**: 5 requests/second with burst of 10 for anonymous traffic
+- **Usage Plans**: Quota scaffolding available for future API key association
+- **Method Configuration**: GET, POST, and OPTIONS methods with Lambda proxy integration
 
 #### Lambda Function Configuration
 
@@ -484,15 +486,14 @@ The Lambda function is optimized for performance and cost:
 - **Memory**: 256MB allocation balanced for performance and cost
 - **Timeout**: 30 seconds to prevent runaway costs
 - **Environment Variables**: Secure configuration management
-- **Logging**: Structured CloudWatch logging for monitoring
+- **Logging**: CloudWatch request metadata and error logging
 
 #### Environment Parameterization
 
 All infrastructure components use environment-specific naming and configuration:
 
 - **Resource Naming**: All AWS resources include environment prefix (e.g., `blockbuster-index-chat-bot-dev`)
-- **Configuration Mapping**: Environment-specific settings for logging levels and API endpoints
-- **Security Groups**: Environment-specific network security configurations
+- **Configuration Mapping**: Environment-specific settings for API endpoints
 - **Custom Domains**: Environment-specific API Gateway domains
 
 ## License

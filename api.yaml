@@ -113,6 +113,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '502':
+          description: Upstream Claude API failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                error: "Sorry dude, I'm having some technical difficulties right now! Try again in a bit!"
+                timestamp: "2023-01-01T00:00:00Z"
+                requestId: "abc-123-def"
     
     options:
       summary: CORS preflight
@@ -128,7 +138,7 @@ paths:
               description: Allowed origin for CORS
               schema:
                 type: string
-                example: "*"
+                example: "https://www.blockbusterindex.com"
             Access-Control-Allow-Methods:
               description: Allowed HTTP methods
               schema:
@@ -174,6 +184,7 @@ components:
           type: string
           description: The message to send to the chat bot
           minLength: 1
+          maxLength: 2000
           example: "What is the Blockbuster Index?"
         history:
           type: array

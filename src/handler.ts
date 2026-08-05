@@ -8,8 +8,6 @@ import { buildConversationHistory } from "./services/history";
 export const handler = async (
   event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> => {
-  console.log("Received event:", JSON.stringify(event, null, 2));
-
   const origin = event.headers.Origin || event.headers.origin;
   const referer = event.headers.Referer || event.headers.referer;
 
@@ -22,6 +20,13 @@ export const handler = async (
       requestOrigin = referer;
     }
   }
+
+  console.log("Request received", {
+    requestId: event.requestContext.requestId,
+    method: event.httpMethod,
+    path: event.path,
+    origin: requestOrigin,
+  });
 
   const corsHeaders = getCorsHeaders(requestOrigin);
 
@@ -98,6 +103,18 @@ export const handler = async (
         chatRequest.message,
         chatRequest.history,
       );
+
+      if (tapeyResponse.error) {
+        return {
+          statusCode: 502,
+          headers: corsHeaders,
+          body: JSON.stringify({
+            error: tapeyResponse.message,
+            timestamp,
+            requestId,
+          }),
+        };
+      }
 
       const updatedHistory = buildConversationHistory(
         chatRequest.history || [],

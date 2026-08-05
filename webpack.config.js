@@ -1,8 +1,5 @@
 const path = require("path");
-const dotenv = require("dotenv");
 const TerserPlugin = require("terser-webpack-plugin");
-
-dotenv.config();
 
 module.exports = {
   entry: "./src/index.ts",
@@ -48,7 +45,7 @@ module.exports = {
       new TerserPlugin({
         terserOptions: {
           compress: {
-            drop_console: true,
+            pure_funcs: ["console.log", "console.info", "console.debug"],
           },
           output: {
             comments: false,

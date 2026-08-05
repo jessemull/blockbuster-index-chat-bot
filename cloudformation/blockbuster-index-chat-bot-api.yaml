@@ -90,6 +90,7 @@ Resources:
             type: string
             description: "The message to send to the chat bot"
             minLength: 1
+            maxLength: 2000
           history:
             type: array
             description: "Previous conversation history (optional, defaults to empty array)"
@@ -245,6 +246,9 @@ Resources:
         - StatusCode: "500"
           ResponseModels:
             application/json: !Ref ErrorResponseModel
+        - StatusCode: "502"
+          ResponseModels:
+            application/json: !Ref ErrorResponseModel
 
   OptionsChatMethod:
     Type: AWS::ApiGateway::Method
@@ -254,23 +258,11 @@ Resources:
       HttpMethod: OPTIONS
       AuthorizationType: NONE
       Integration:
-        Type: MOCK
-        RequestTemplates:
-          application/json: '{"statusCode": 200}'
-        IntegrationResponses:
-          - StatusCode: "200"
-            ResponseParameters:
-              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-              method.response.header.Access-Control-Allow-Methods: "'GET,POST,OPTIONS'"
-              method.response.header.Access-Control-Allow-Origin: "'https://www.blockbusterindex.com'"
-            ResponseTemplates:
-              application/json: ""
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub "arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:blockbuster-index-chat-bot-${Environment}/invocations"
       MethodResponses:
         - StatusCode: "200"
-          ResponseParameters:
-            method.response.header.Access-Control-Allow-Headers: true
-            method.response.header.Access-Control-Allow-Methods: true
-            method.response.header.Access-Control-Allow-Origin: true
 
   ApiDeployment:
     Type: AWS::ApiGateway::Deployment
@@ -285,8 +277,20 @@ Resources:
       - ChatRequestValidator
     Properties:
       RestApiId: !Ref ChatBotApi
-      StageName: !Ref Environment
       Description: !Sub "Deployment for ${Environment} environment"
+
+  ApiStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      StageName: !Ref Environment
+      RestApiId: !Ref ChatBotApi
+      DeploymentId: !Ref ApiDeployment
+      Description: !Sub "Stage for ${Environment} environment"
+      MethodSettings:
+        - ResourcePath: "/*"
+          HttpMethod: "*"
+          ThrottlingRateLimit: 5
+          ThrottlingBurstLimit: 10
 
   CustomDomainName:
     Type: AWS::ApiGateway::DomainName
@@ -301,15 +305,15 @@ Resources:
   BasePathMapping:
     Type: AWS::ApiGateway::BasePathMapping
     DependsOn:
-      - ApiDeployment
+      - ApiStage
     Properties:
       DomainName: !Ref CustomDomainName
       RestApiId: !Ref ChatBotApi
-      Stage: !Ref Environment
+      Stage: !Ref ApiStage
 
   ChatBotUsagePlan:
     Type: AWS::ApiGateway::UsagePlan
-    DependsOn: ApiDeployment
+    DependsOn: ApiStage
     Properties:
       UsagePlanName: !Sub "blockbuster-index-chat-bot-usage-plan-${Environment}"
       Description: "Usage plan for Blockbuster Index Chat Bot API with rate limiting"
@@ -321,7 +325,7 @@ Resources:
         Period: DAY
       ApiStages:
         - ApiId: !Ref ChatBotApi
-          Stage: !Ref Environment
+          Stage: !Ref ApiStage
 
 Outputs:
   ApiGatewayId:
@@ -344,7 +348,7 @@ Outputs:
 
   CustomDomainUrl:
     Description: "Custom domain URL"
-    Value: !Sub "https://${DomainName}/chat"
+    Value: !Sub "https://${DomainName}/api/chat"
     Export:
       Name: !Sub "BlockbusterChatBotCustomDomainUrl-${Environment}"
 

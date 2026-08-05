@@ -345,7 +345,7 @@ describe("Blockbuster Index Chat Bot Handler", () => {
     expect(responseBody.message).toContain("Hey there, dude!");
   });
 
-  it("should handle Claude API error gracefully", async () => {
+  it("should return 502 when Claude API returns an error", async () => {
     mockGetTapeyResponse.mockResolvedValue({
       message:
         "Sorry dude, I'm having some technical difficulties right now! Try again in a bit!",
@@ -355,9 +355,9 @@ describe("Blockbuster Index Chat Bot Handler", () => {
     const event = getMockEvent("POST", JSON.stringify({ message: "Hello" }));
     const result = await handler(event);
 
-    expect(result.statusCode).toBe(200);
+    expect(result.statusCode).toBe(502);
     const responseBody = JSON.parse(result.body!);
-    expect(responseBody.message).toContain(
+    expect(responseBody.error).toContain(
       "Sorry dude, I'm having some technical difficulties",
     );
   });
