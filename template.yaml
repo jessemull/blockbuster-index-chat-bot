@@ -22,7 +22,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       FunctionName: !Sub "blockbuster-index-chat-bot-${Environment}"
-      Runtime: nodejs20.x
+      Runtime: nodejs24.x
       Role:
         Fn::ImportValue: !Sub "BlockbusterChatBotExecutionRoleArn-${Environment}"
       Handler: index.handler

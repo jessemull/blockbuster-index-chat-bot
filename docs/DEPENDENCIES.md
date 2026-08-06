@@ -9,17 +9,25 @@
 - Keep **runtime** dependencies minimal
 - Prefer well-maintained official SDKs
 - Lockfile (`package-lock.json`) is committed; use `npm ci` in CI
-- Node engine: `>=20` (matches Lambda `nodejs20.x`)
+- Node engine: `>=24` (matches Lambda `nodejs24.x`)
 
 ---
 
 ## Current runtime
 
-| Package             | Purpose             |
-| ------------------- | ------------------- |
-| `@anthropic-ai/sdk` | Claude Messages API |
+| Package             | Purpose             | Notes                          |
+| ------------------- | ------------------- | ------------------------------ |
+| `@anthropic-ai/sdk` | Claude Messages API | Keep on latest `0.x` when safe |
 
 Dev tooling (TypeScript, Jest, ESLint, Prettier, Webpack, husky, commitlint) is allowed to grow carefully; still avoid unused plugins.
+
+### Intentionally not on absolute latest
+
+| Package      | Held at | Reason                                                       |
+| ------------ | ------- | ------------------------------------------------------------ |
+| `typescript` | 6.x     | `typescript-eslint` requires `<6.1`; `ts-jest` requires `<7` |
+
+`@types/node` tracks the **Lambda runtime major** (`24.x`), not npm’s newest Node types line (`26.x`).
 
 ---
 
@@ -37,7 +45,7 @@ Dev tooling (TypeScript, Jest, ESLint, Prettier, Webpack, husky, commitlint) is 
 
 ```bash
 make security
-# npm audit --omit=dev --audit-level=high
+make security-all
 ```
 
-Full `npm audit` (including devDependencies) may report high issues in the toolchain; production audit is the merge gate.
+Production audit is the deploy gate; full audit (including devDependencies) is also required in CI.

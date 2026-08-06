@@ -85,7 +85,7 @@ Every review comment must be tagged with a severity tier.
 ## Infra / CI checklist
 
 - [ ] CloudFormation changes reviewed (stage throttle, encryption, permissions)
-- [ ] Workflows still use Node 20 and modern actions
+- [ ] Workflows still use Node 24 and modern actions
 - [ ] Rollback statuses treated as failure where applicable
 
 ---

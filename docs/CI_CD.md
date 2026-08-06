@@ -15,7 +15,7 @@
 | `deploy.yml`       | `workflow_dispatch` | Same quality gates, then deploy to **dev** or **prod**                                              |
 | `rollback.yml`     | `workflow_dispatch` | Redeploy prior S3 zip to chosen environment                                                         |
 
-All use Node **20**, `actions/checkout@v4`, and `aws-actions/configure-aws-credentials@v4` where AWS is needed.
+All use Node **24**, `actions/checkout@v4`, and `aws-actions/configure-aws-credentials@v4` where AWS is needed.
 
 Branch protection on `main` (required status checks) is configured in GitHub settings, not in YAML.
 
@@ -47,6 +47,7 @@ make ci            # all of the above
 ```
 
 PR CI also runs **commitlint** against the PR commit range (`wagoid/commitlint-github-action`).
+CloudFormation lint requires **cfn-lint ≥ 1.54** (knows `nodejs24.x`); CI installs that pin, and `make cfn-lint` installs into `.tools/` locally.
 
 Jest enforces 80% coverage thresholds; failing coverage fails `npm test` / `make preflight`.
 

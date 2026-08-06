@@ -3,8 +3,10 @@ import { CLAUDE_MODEL, MAX_TOKENS, TAPEY_SYSTEM_PROMPT } from "../constants";
 import { ClaudeApiResponse, ChatMessage } from "../types";
 import { convertToClaudeFormat } from "./history";
 
+// Always pass apiKey so the SDK skips async default-credential discovery
+// (avoids Jest teardown races when ANTHROPIC_API_KEY is unset in unit tests).
 const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+  apiKey: process.env.ANTHROPIC_API_KEY || "unset",
 });
 
 export async function getTapeyResponse(

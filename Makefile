@@ -45,8 +45,11 @@ package: ## Quality@zip Lambda artifact
 preflight: ## Quality@lint + test + build
 	./scripts/preflight.sh
 
-cfn-lint: ## Quality@CloudFormation lint (requires cfn-lint)
-	cfn-lint --non-zero-exit-code error template.yaml cloudformation/*.yaml
+cfn-lint: ## Quality@CloudFormation lint (cfn-lint >=1.54 for nodejs24.x)
+	@mkdir -p .tools
+	@python3 -m pip install -q --upgrade --target .tools/cfn-lint 'cfn-lint>=1.54.0'
+	PYTHONPATH="$(CURDIR)/.tools/cfn-lint" "$(CURDIR)/.tools/cfn-lint/bin/cfn-lint" \
+		--non-zero-exit-code error template.yaml cloudformation/*.yaml
 
 openapi: ## Quality@validate api.yaml
 	npx --yes @apidevtools/swagger-cli validate api.yaml

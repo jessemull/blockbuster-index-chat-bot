@@ -82,6 +82,9 @@ out
 .nuxt
 dist
 
+# Local cfn-lint install used by `make cfn-lint`
+.tools/
+
 # Gatsby files
 .cache/
 # Comment in the public line in if your project uses Gatsby and not Next.js

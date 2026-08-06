@@ -521,7 +521,7 @@ The API Gateway is configured with comprehensive features:
 
 The Lambda function is optimized for performance and cost:
 
-- **Runtime**: Node.js 20.x for optimal performance
+- **Runtime**: Node.js 24.x (AWS Lambda `nodejs24.x`)
 - **Memory**: 256MB allocation balanced for performance and cost
 - **Timeout**: 30 seconds to prevent runaway costs
 - **Environment Variables**: Secure configuration management
