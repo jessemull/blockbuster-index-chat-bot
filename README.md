@@ -110,11 +110,11 @@ The API uses comprehensive data models for request/response validation:
 
 ## AI Model
 
-The chat bot uses **Anthropic's Claude 3 Haiku** model for natural language processing and response generation.
+The chat bot uses **Anthropic's Claude Haiku 4.5** model for natural language processing and response generation.
 
 ### Model Configuration
 
-- **Model**: `claude-3-haiku-20240307`
+- **Model**: `claude-haiku-4-5-20251001`
 - **Max Tokens**: 500 (configurable for cost control)
 - **Temperature**: Default (balanced creativity and consistency)
 
