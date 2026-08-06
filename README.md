@@ -265,19 +265,21 @@ To clone the repository, install dependencies, and run the project locally follo
 
 Common targets (see `make help`):
 
-| Target                               | Description                 |
-| ------------------------------------ | --------------------------- |
-| `make install`                       | `npm ci`                    |
-| `make lint` / `make format`          | ESLint / Prettier check     |
-| `make test`                          | Jest with coverage          |
-| `make security`                      | Production dependency audit |
-| `make build` / `make package`        | Webpack bundle / Lambda zip |
-| `make preflight`                     | lint + test + build         |
-| `make validate-env` / `make bastion` | Bastion SSH helpers         |
+| Target                                | Description                  |
+| ------------------------------------- | ---------------------------- |
+| `make install`                        | `npm ci`                     |
+| `make lint` / `make format`           | ESLint / Prettier check      |
+| `make test`                           | Jest with coverage           |
+| `make security` / `make security-all` | Prod / full dependency audit |
+| `make build` / `make package`         | Webpack bundle / Lambda zip  |
+| `make preflight`                      | lint + test + build          |
+| `make cfn-lint` / `make openapi`      | CFN lint / OpenAPI validate  |
+| `make ci`                             | Full local CI bar            |
+| `make validate-env` / `make bastion`  | Bastion SSH helpers          |
 
 ## Pull requests
 
-Use the pre-merge checklist and severity tiers in [`docs/REVIEW.md`](docs/REVIEW.md). Fill out [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md). Required local bar: `make preflight`.
+Use the pre-merge checklist and severity tiers in [`docs/REVIEW.md`](docs/REVIEW.md). Fill out [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md). Preferred local bar: `make ci` (or at least `make preflight` + `make security`).
 
 ## Development Workflow
 

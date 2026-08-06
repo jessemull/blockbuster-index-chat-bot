@@ -43,7 +43,8 @@
 ## Dependencies
 
 - Prefer minimal runtime dependencies (currently `@anthropic-ai/sdk` only)
-- `make security` audits **production** dependencies
+- `make security` audits **production** dependencies (`--omit=dev --audit-level=high`)
+- `make security-all` audits **all** dependencies including devDeps (`--audit-level=high`)
 - New runtime deps require human review (`docs/GOVERNANCE.md`, `docs/DEPENDENCIES.md`)
 
 ---

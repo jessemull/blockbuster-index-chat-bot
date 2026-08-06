@@ -3,8 +3,8 @@
 
 .DEFAULT_GOAL := help
 
-.PHONY: help install lint format format-fix test security build package preflight \
-	validate-env bastion clean
+.PHONY: help install lint format format-fix test security security-all build package \
+	preflight cfn-lint openapi ci validate-env bastion clean
 
 help: ## Help@show targets
 	@printf 'Blockbuster Index Chat Bot — make <target>\n\n'
@@ -33,6 +33,9 @@ test: ## Quality@jest with coverage
 security: ## Quality@production npm audit (high+)
 	npm audit --omit=dev --audit-level=high
 
+security-all: ## Quality@full npm audit including devDeps (high+)
+	npm audit --audit-level=high
+
 build: ## Quality@webpack production bundle
 	npm run build
 
@@ -41,6 +44,20 @@ package: ## Quality@zip Lambda artifact
 
 preflight: ## Quality@lint + test + build
 	./scripts/preflight.sh
+
+cfn-lint: ## Quality@CloudFormation lint (requires cfn-lint)
+	cfn-lint --non-zero-exit-code error template.yaml cloudformation/*.yaml
+
+openapi: ## Quality@validate api.yaml
+	npx --yes @apidevtools/swagger-cli validate api.yaml
+
+ci: ## Quality@format + preflight + audits + cfn-lint + openapi
+	$(MAKE) format
+	$(MAKE) preflight
+	$(MAKE) security
+	$(MAKE) security-all
+	$(MAKE) cfn-lint
+	$(MAKE) openapi
 
 validate-env: ## Utilities@check bastion SSH env vars
 	node ./scripts/validate-env.js

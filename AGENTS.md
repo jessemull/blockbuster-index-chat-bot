@@ -54,9 +54,13 @@ Run **`make`** or **`make help`** for the full list.
 | `make format` / `make format-fix` | Prettier check / write                               |
 | `make test`                       | Jest with coverage                                   |
 | `make security`                   | Production dependency audit (`npm audit --omit=dev`) |
+| `make security-all`               | Full dependency audit including devDeps              |
 | `make build`                      | Webpack production bundle                            |
 | `make package`                    | Zip Lambda artifact                                  |
 | `make preflight`                  | lint + test + build                                  |
+| `make cfn-lint`                   | CloudFormation lint (requires `cfn-lint` on PATH)    |
+| `make openapi`                    | Validate `api.yaml`                                  |
+| `make ci`                         | format + preflight + audits + cfn-lint + openapi     |
 | `make validate-env`               | Check bastion SSH env vars                           |
 | `make bastion`                    | SSH via `scripts/connect.js`                         |
 | `make clean`                      | Remove `dist/`                                       |

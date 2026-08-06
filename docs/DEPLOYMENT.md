@@ -67,4 +67,5 @@ Bump `DeploymentNonce` on the API stack when method/model changes need a forced 
 ```bash
 make preflight
 make security
+make security-all
 ```

@@ -8,14 +8,16 @@
 
 ## Workflows
 
-| Workflow           | Trigger             | Purpose                                                     |
-| ------------------ | ------------------- | ----------------------------------------------------------- |
-| `pull-request.yml` | PR to `main`        | Build, lint, test, coverage artifact, prod dependency audit |
-| `merge.yml`        | Push to `main`      | Deploy Lambda to **dev** via CloudFormation change set      |
-| `deploy.yml`       | `workflow_dispatch` | Deploy to **dev** or **prod**                               |
-| `rollback.yml`     | `workflow_dispatch` | Redeploy prior S3 zip to chosen environment                 |
+| Workflow           | Trigger             | Purpose                                                                                             |
+| ------------------ | ------------------- | --------------------------------------------------------------------------------------------------- |
+| `pull-request.yml` | PR to `main`        | `make format`, `make preflight` (+ package), prod + full `npm audit`, commitlint, cfn-lint, OpenAPI |
+| `merge.yml`        | Push to `main`      | Same quality gates, then deploy Lambda to **dev** via CloudFormation change set                     |
+| `deploy.yml`       | `workflow_dispatch` | Same quality gates, then deploy to **dev** or **prod**                                              |
+| `rollback.yml`     | `workflow_dispatch` | Redeploy prior S3 zip to chosen environment                                                         |
 
 All use Node **20**, `actions/checkout@v4`, and `aws-actions/configure-aws-credentials@v4` where AWS is needed.
+
+Branch protection on `main` (required status checks) is configured in GitHub settings, not in YAML.
 
 ---
 
@@ -32,14 +34,21 @@ OIDC is intentionally not used (cost/ops choice). Treat long-lived keys carefull
 
 ## Quality bar
 
-Local and CI should agree:
+Local and CI use the same Make targets:
 
 ```bash
-make preflight   # lint + test + build
-make security    # npm audit --omit=dev --audit-level=high
+make format        # prettier --check
+make preflight     # lint + test + build
+make security      # npm audit --omit=dev --audit-level=high
+make security-all  # npm audit --audit-level=high (includes devDeps)
+make cfn-lint      # CloudFormation templates (requires cfn-lint on PATH)
+make openapi       # validate api.yaml
+make ci            # all of the above
 ```
 
-Jest enforces 80% coverage thresholds; failing coverage fails `npm test`.
+PR CI also runs **commitlint** against the PR commit range (`wagoid/commitlint-github-action`).
+
+Jest enforces 80% coverage thresholds; failing coverage fails `npm test` / `make preflight`.
 
 ---
 
@@ -51,6 +60,6 @@ Deploy/merge workflows treat `ROLLBACK_COMPLETE` / `UPDATE_ROLLBACK_COMPLETE` as
 
 ## Changing CI
 
-- Prefer shared steps over copy-paste drift between `merge.yml` and `deploy.yml`
+- Prefer shared Make targets over copy-paste drift between workflows
 - Keep Node version aligned with `engines` and Lambda runtime
 - Human review required (`docs/GOVERNANCE.md`)

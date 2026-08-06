@@ -23,13 +23,16 @@ jobs:
         run: |
           npm ci
 
-      - name: Lint Code
-        run: |
-          npm run lint
+      - name: Format Check
+        run: make format
 
-      - name: Run Unit Tests
+      - name: Preflight
+        run: make preflight
+
+      - name: Security Audit
         run: |
-          npm test
+          make security
+          make security-all
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
@@ -48,7 +51,6 @@ jobs:
       - name: Build Lambda Package
         run: |
           export NODE_ENV=dev
-          npm run build
           npm run package
 
       - name: Generate Artifact Name

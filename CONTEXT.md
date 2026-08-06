@@ -81,13 +81,13 @@ These apply to **every** change. No exceptions without explicit human approval.
 
 ## Mandatory Quality Gates
 
-| When               | Gate                                                              | Failure policy        |
-| ------------------ | ----------------------------------------------------------------- | --------------------- |
-| **Commit**         | husky + lint-staged (eslint/prettier on staged files); commitlint | Block commit          |
-| **Push**           | husky `pre-push` → `make preflight` (lint + test + build)         | Block push            |
-| **Local / pre-PR** | `make preflight` (also run manually anytime)                      | Fix before opening PR |
-| **PR CI**          | lint, test, build, production `npm audit`                         | Block merge           |
-| **Deploy**         | lint, test, build, CloudFormation change set                      | Block deploy          |
+| When               | Gate                                                                 | Failure policy        |
+| ------------------ | -------------------------------------------------------------------- | --------------------- |
+| **Commit**         | husky + lint-staged (eslint/prettier on staged files); commitlint    | Block commit          |
+| **Push**           | husky `pre-push` → `make preflight` (lint + test + build)            | Block push            |
+| **Local / pre-PR** | `make ci` (or at least `make preflight` + `make security`)           | Fix before opening PR |
+| **PR CI**          | format, preflight, prod + full audit, commitlint, cfn-lint, OpenAPI  | Block merge           |
+| **Deploy**         | format, preflight, prod + full audit, then CloudFormation change set | Block deploy          |
 
 ---
 

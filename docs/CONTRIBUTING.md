@@ -23,7 +23,7 @@ Read `CONTEXT.md` then `AGENTS.md` before substantial changes.
 1. Sync `main`
 2. Create `feature/...`, `fix/...`, or `chore/...`
 3. Implement with tests
-4. `make preflight`
+4. `make ci` (or `make preflight` + `make security`)
 5. Open PR using the GitHub template
 6. Address MUST findings from `docs/REVIEW.md`
 

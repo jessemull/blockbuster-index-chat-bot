@@ -16,6 +16,8 @@
 ### Required
 
 - [ ] `make preflight` passes (lint + test + build)
+- [ ] `make security` / `make security-all` pass
+- [ ] `make format` passes; CFN/OpenAPI changes lint cleanly (`make cfn-lint` / `make openapi`)
 - [ ] Tests added/updated for behavior changes
 - [ ] No secrets committed
 

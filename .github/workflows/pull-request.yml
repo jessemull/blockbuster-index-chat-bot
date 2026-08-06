@@ -6,8 +6,8 @@ on:
       - main
 
 jobs:
-  build:
-    name: Build
+  format:
+    name: Format
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -22,50 +22,32 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Build & Package Lambda
+      - name: Prettier Check
+        run: make format
+
+  preflight:
+    name: Preflight
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Lint, Test, Build
+        run: make preflight
+
+      - name: Package Lambda
         run: |
           export NODE_ENV=dev
-          npm run build
           npm run package
-
-  lint:
-    name: Lint Code
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Run Linting
-        run: npm run lint
-
-  test:
-    name: Run Unit Tests
-    needs: lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Run Jest Tests
-        run: npm run test
 
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
@@ -91,4 +73,62 @@ jobs:
         run: npm ci
 
       - name: Production Dependency Audit
-        run: npm audit --omit=dev --audit-level=high
+        run: make security
+
+      - name: Full Dependency Audit
+        run: make security-all
+
+  commitlint:
+    name: Commitlint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Lint Commit Messages
+        uses: wagoid/commitlint-github-action@v6
+
+  cfn-lint:
+    name: CloudFormation Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install cfn-lint
+        run: pip install cfn-lint
+
+      - name: Lint Templates
+        run: make cfn-lint
+
+  openapi:
+    name: OpenAPI Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Validate api.yaml
+        run: make openapi
