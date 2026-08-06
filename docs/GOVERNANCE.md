@@ -25,7 +25,7 @@ Resolve conflicts upward, never downward.
 - TypeScript strict mode on
 - No secrets committed; `.env` gitignored
 - Handler does not call Anthropic directly
-- Message ≤ 2000 chars; history ≤ 5 validated messages
+- Message ≤ 2000 chars; history ≤ 5 messages, alternating user/assistant (starts user, ends assistant)
 - Claude failures → HTTP 502
 - No full-event / message-body logging
 - CORS allowlist only (no `*`)

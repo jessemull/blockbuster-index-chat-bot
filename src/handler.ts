@@ -13,7 +13,7 @@ export const handler = async (
 
   let requestOrigin = origin;
   if (!requestOrigin && referer) {
-    const match = referer.match(/^(https?:\/\/[^\/]+)/);
+    const match = referer.match(/^(https?:\/\/[^/]+)/);
     if (match) {
       requestOrigin = match[1];
     } else {

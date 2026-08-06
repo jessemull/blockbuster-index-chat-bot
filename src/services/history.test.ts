@@ -154,9 +154,11 @@ describe("History Service", () => {
         "New response",
       );
 
-      expect(result).toHaveLength(MAX_HISTORY_LENGTH);
-      expect(result[0].content).toBe("Old 2 response");
-      expect(result[4].content).toBe("New response");
+      expect(result).toHaveLength(4);
+      expect(result[0]).toEqual(
+        expect.objectContaining({ role: "user", content: "Old 3" }),
+      );
+      expect(result[3].content).toBe("New response");
     });
 
     it("should handle undefined existing history", () => {

@@ -149,6 +149,11 @@ paths:
               schema:
                 type: string
                 example: "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
+            Vary:
+              description: Indicates CORS origin is request-dependent
+              schema:
+                type: string
+                example: "Origin"
 
 components:
   schemas:
@@ -189,7 +194,10 @@ components:
           example: "What is the Blockbuster Index?"
         history:
           type: array
-          description: Previous conversation history (optional, defaults to empty array)
+          description: >
+            Previous conversation history (optional, defaults to empty array).
+            When present, messages must alternate user/assistant, start with
+            user, and end with assistant. Max 5 messages.
           items:
             $ref: "#/components/schemas/ChatMessage"
           maxItems: 5
@@ -214,7 +222,9 @@ components:
           example: "Hey there! The Blockbuster Index is totally awesome..."
         history:
           type: array
-          description: Updated conversation history (limited to 5 messages)
+          description: >
+            Updated conversation history (at most 5 messages), always starting
+            with user and ending with assistant for safe round-trips.
           items:
             $ref: "#/components/schemas/ChatMessage"
           maxItems: 5
@@ -249,13 +259,6 @@ components:
           type: string
           description: Unique request identifier for tracking
           example: "abc-123-def"
-
-  securitySchemes:
-    ApiKeyAuth:
-      type: apiKey
-      in: header
-      name: x-api-key
-      description: API key for authentication (if enabled in the future)
 
 tags:
   - name: Health

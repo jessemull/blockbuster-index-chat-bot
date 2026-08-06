@@ -11,11 +11,11 @@ description: >-
 
 1. Reproduce with Jest when possible
 2. Check handler validation vs Claude service vs CORS
-3. Confirm webpack keeps `console.error` for prod diagnosis
+3. Confirm webpack keeps `console.log` (request metadata) and `console.error` in prod bundles
 
 ## Deployed
 
-1. CloudWatch logs for the env’s function (metadata + errors only by design)
+1. CloudWatch logs for the env’s function (`console.log` metadata + `console.error` only by design)
 2. API Gateway stage throttle / 4xx vs 5xx
 3. Confirm Anthropic key present on Lambda env
 4. Recent change set / rollback artifact

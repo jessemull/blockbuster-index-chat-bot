@@ -513,8 +513,7 @@ The API Gateway is configured with comprehensive features:
 - **Custom Domain**: Environment-specific custom domains with SSL certificates
 - **Request Validation**: API Gateway models ensure proper request/response validation
 - **CORS Support**: Dynamic CORS allowlist handled by Lambda (including OPTIONS)
-- **Stage Throttling**: 5 requests/second with burst of 10 for anonymous traffic
-- **Stage throttle**: API Gateway MethodSettings — 5 rps / burst 10 (primary abuse control)
+- **Stage Throttling**: API Gateway MethodSettings — 5 rps / burst 10 (primary abuse control)
 - **Method Configuration**: GET, POST, and OPTIONS methods with Lambda proxy integration
 
 #### Lambda Function Configuration

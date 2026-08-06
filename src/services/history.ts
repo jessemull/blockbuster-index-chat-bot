@@ -7,6 +7,15 @@ export function limitHistoryLength(history: ChatMessage[] = []): ChatMessage[] {
   return history.slice(-MAX_HISTORY_LENGTH);
 }
 
+/** Drop leading assistant turns so the sequence can start with user. */
+export function trimToUserStart(history: ChatMessage[]): ChatMessage[] {
+  const trimmed = [...history];
+  while (trimmed.length > 0 && trimmed[0].role !== "user") {
+    trimmed.shift();
+  }
+  return trimmed;
+}
+
 export function isValidHistoryMessage(
   message: unknown,
 ): message is ChatMessage {
@@ -43,10 +52,7 @@ function normalizeForClaude(history: ChatMessage[]): {
   history: ChatMessage[];
   error?: string;
 } {
-  const normalized = [...history];
-  while (normalized.length > 0 && normalized[0].role !== "user") {
-    normalized.shift();
-  }
+  const normalized = trimToUserStart(history);
 
   if (!isAlternatingUserFirst(normalized)) {
     return {
@@ -112,7 +118,8 @@ export function buildConversationHistory(
     userMessageObj,
     assistantMessageObj,
   ];
-  return limitHistoryLength(updatedHistory);
+  // Keep outbound history Claude-safe for the next client round-trip.
+  return trimToUserStart(limitHistoryLength(updatedHistory));
 }
 
 export function convertToClaudeFormat(

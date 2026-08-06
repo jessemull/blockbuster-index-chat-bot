@@ -286,11 +286,14 @@ describe("Blockbuster Index Chat Bot Handler", () => {
 
     expect(result.statusCode).toBe(200);
     const responseBody = JSON.parse(result.body!);
-    expect(responseBody.history).toHaveLength(5); // Limited to 5 messages
-    expect(responseBody.history[0].content).toBe("Old 3 response"); // Oldest kept message
-    expect(responseBody.history[4].content).toBe(
+    // Length-capped then trimmed so outbound history starts with user
+    expect(responseBody.history).toHaveLength(4);
+    expect(responseBody.history[0]).toEqual(
+      expect.objectContaining({ role: "user", content: "Old 4" }),
+    );
+    expect(responseBody.history[3].content).toBe(
       "Hey there, dude! That's totally awesome!",
-    ); // Newest message
+    );
   });
 
   it("should handle POST request with null body", async () => {
