@@ -1,0 +1,19 @@
+---
+description: "Intent-only comment policy for TypeScript."
+globs: "**/*.{ts,js}"
+alwaysApply: false
+---
+
+# Comments
+
+See `docs/COMMENTS.md`.
+
+## MUST
+
+- Comment **why**, not what
+- Document security or architectural intent when non-obvious
+
+## MUST NOT
+
+- Add narration comments (`// Handle POST request`)
+- Leave commented-out dead code

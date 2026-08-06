@@ -1,0 +1,22 @@
+---
+description: "Security constraints for secrets, logging, CORS, and IAM."
+globs: "{src/**/*.ts,template.yaml,cloudformation/**/*.yaml,.github/workflows/**/*.yml}"
+alwaysApply: false
+---
+
+# Security
+
+See `docs/SECURITY.md`.
+
+## MUST
+
+- Keep secrets out of git; use `.env.example` for bastion docs only
+- Log request metadata only (no message bodies / full events)
+- Keep CORS allowlisted; OPTIONS via Lambda
+- Justify IAM and invoke SourceArn changes
+
+## MUST NOT
+
+- Hardcode API keys
+- Set `Access-Control-Allow-Origin: *`
+- Return sensitive error details to clients

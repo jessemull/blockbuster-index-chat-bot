@@ -1,0 +1,21 @@
+---
+description: "Application and infrastructure layer boundaries for the chat bot."
+alwaysApply: true
+---
+
+# Architecture
+
+See `docs/ARCHITECTURE.md`.
+
+## MUST
+
+- Keep `handler` → `services` / `utils` / `constants` / `types`
+- Call Anthropic only from `src/services/claude.ts`
+- Sanitize/limit history before Claude (`sanitizeHistory`)
+- Preserve CloudFormation split (Lambda template vs API/role/S3)
+
+## MUST NOT
+
+- Put business/LLM logic in the handler beyond orchestration
+- Import the handler from services
+- Bypass validation for message length or history shape

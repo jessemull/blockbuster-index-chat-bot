@@ -12,34 +12,51 @@ This chat bot is part of the **Blockbuster Index Project** which includes the fo
 
 ## Table of Contents
 
-1. [Project Overview](#project-overview)
-2. [Architecture Overview](#architecture-overview)
-3. [AI Model](#ai-model)
-4. [Cost Management](#cost-management)
-5. [API Endpoints](#api-endpoints)
-6. [Environments](#environments)
-7. [Tech Stack](#tech-stack)
-8. [Setup Instructions](#setup-instructions)
-9. [Development Workflow](#development-workflow)
-10. [Commits & Commitizen](#commits--commitizen)
+1. [Agent & contributor entry](#agent--contributor-entry)
+2. [Project Overview](#project-overview)
+3. [Architecture Overview](#architecture-overview)
+4. [AI Model](#ai-model)
+5. [Cost Management](#cost-management)
+6. [API Endpoints](#api-endpoints)
+7. [Environments](#environments)
+8. [Tech Stack](#tech-stack)
+9. [Setup Instructions](#setup-instructions)
+10. [Makefile](#makefile)
+11. [Pull requests](#pull-requests)
+12. [Development Workflow](#development-workflow)
+13. [Commits & Commitizen](#commits--commitizen)
     - [Making a Commit](#making-a-commit)
-11. [Linting & Formatting](#linting--formatting)
+14. [Linting & Formatting](#linting--formatting)
     - [Linting Commands](#linting-commands)
     - [Formatting Commands](#formatting-commands)
     - [Pre-Commit Hook](#pre-commit-hook)
-12. [Unit Tests & Code Coverage](#unit-tests--code-coverage)
+15. [Unit Tests & Code Coverage](#unit-tests--code-coverage)
     - [Unit Tests](#unit-tests)
     - [Code Coverage](#code-coverage)
-13. [Error & Performance Monitoring](#error--performance-monitoring)
+16. [Error & Performance Monitoring](#error--performance-monitoring)
     - [Configuration](#configuration)
     - [CloudWatch Logging](#cloudwatch-logging)
-14. [Environment Variables](#environment-variables)
-15. [Build & Deployment](#build--deployment)
+17. [Environment Variables](#environment-variables)
+18. [Build & Deployment](#build--deployment)
     - [Build Process](#build-process)
     - [Lambda Package](#lambda-package)
     - [GitHub Workflows](#github-workflows)
     - [Infrastructure](#infrastructure)
-16. [License](#license)
+19. [Related documentation](#related-documentation)
+20. [License](#license)
+
+## Agent & contributor entry
+
+**AI agents must start at [`CONTEXT.md`](CONTEXT.md)** (mandatory reading order and non-negotiables), then [`AGENTS.md`](AGENTS.md).
+
+| Entry                                | Purpose                                              |
+| ------------------------------------ | ---------------------------------------------------- |
+| [`CONTEXT.md`](CONTEXT.md)           | Primary agent entry; precedence and quality gates    |
+| [`AGENTS.md`](AGENTS.md)             | Commands, architecture rules, conventions            |
+| [`docs/`](docs/)                     | Governance, architecture, review, security, deploy   |
+| [`.cursor/rules/`](.cursor/rules/)   | Always-on and scoped Cursor rules                    |
+| [`.cursor/skills/`](.cursor/skills/) | Agent skills (commit, pr-review, push-validation, …) |
+| [`Makefile`](Makefile)               | `make preflight`, `make test`, `make security`, …    |
 
 ## Project Overview
 
@@ -241,8 +258,26 @@ To clone the repository, install dependencies, and run the project locally follo
 6. Run tests to ensure everything is working:
 
    ```bash
-   npm test
+   make preflight
    ```
+
+## Makefile
+
+Common targets (see `make help`):
+
+| Target                               | Description                 |
+| ------------------------------------ | --------------------------- |
+| `make install`                       | `npm ci`                    |
+| `make lint` / `make format`          | ESLint / Prettier check     |
+| `make test`                          | Jest with coverage          |
+| `make security`                      | Production dependency audit |
+| `make build` / `make package`        | Webpack bundle / Lambda zip |
+| `make preflight`                     | lint + test + build         |
+| `make validate-env` / `make bastion` | Bastion SSH helpers         |
+
+## Pull requests
+
+Use the pre-merge checklist and severity tiers in [`docs/REVIEW.md`](docs/REVIEW.md). Fill out [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md). Required local bar: `make preflight`.
 
 ## Development Workflow
 
@@ -493,6 +528,22 @@ All infrastructure components use environment-specific naming and configuration:
 - **Resource Naming**: All AWS resources include environment prefix (e.g., `blockbuster-index-chat-bot-dev`)
 - **Configuration Mapping**: Environment-specific settings for API endpoints
 - **Custom Domains**: Environment-specific API Gateway domains
+
+## Related documentation
+
+| Doc                                            | Purpose                                         |
+| ---------------------------------------------- | ----------------------------------------------- |
+| [`CONTEXT.md`](CONTEXT.md)                     | Primary AI entry; constraints and quality gates |
+| [`AGENTS.md`](AGENTS.md)                       | Agent/developer rules and commands              |
+| [`docs/GOVERNANCE.md`](docs/GOVERNANCE.md)     | Process, authority, enforcement                 |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Layers and infrastructure layout                |
+| [`docs/REVIEW.md`](docs/REVIEW.md)             | PR review MUST / SHOULD / NICE                  |
+| [`docs/TESTING.md`](docs/TESTING.md)           | Jest strategy and coverage                      |
+| [`docs/SECURITY.md`](docs/SECURITY.md)         | Secrets, logging, CORS, IAM                     |
+| [`docs/ENVIRONMENTS.md`](docs/ENVIRONMENTS.md) | Dev vs prod configuration                       |
+| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md)     | Deploy and rollback procedures                  |
+| [`docs/CI_CD.md`](docs/CI_CD.md)               | GitHub Actions overview                         |
+| [`api.yaml`](api.yaml)                         | OpenAPI description                             |
 
 ## License
 

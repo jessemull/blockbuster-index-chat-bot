@@ -1,0 +1,21 @@
+---
+description: "TypeScript style, exports, and alphabetization conventions."
+globs: "**/*.{ts,js}"
+alwaysApply: false
+---
+
+# TypeScript
+
+See `AGENTS.md`.
+
+## MUST
+
+- Honor `strict: true`
+- Prefer named exports and interfaces for object shapes
+- Alphabetize imports/members/keys when order does not matter
+- Validate untrusted input at the handler boundary
+
+## MUST NOT
+
+- Introduce unjustified `any`
+- Disable TypeScript strict checks

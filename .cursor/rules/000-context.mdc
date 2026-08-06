@@ -1,0 +1,24 @@
+---
+description: "Mandatory governance context loading before any repository changes."
+alwaysApply: true
+---
+
+# Repository Context Loading
+
+Context loading is **not optional**. Before any work:
+
+1. Read `CONTEXT.md`
+2. Read `AGENTS.md`
+3. Read mandatory `docs/` listed in CONTEXT.md (GOVERNANCE, ARCHITECTURE, TESTING, COMMENTS, DEPENDENCIES, SECURITY, CI_CD, ENVIRONMENTS, DEPLOYMENT; REVIEW when reviewing)
+
+## MUST
+
+- [ ] Follow source-of-truth precedence in CONTEXT.md
+- [ ] Respect non-negotiable constraints (strict TS, no secrets, history/message limits, Claude → 502, no full-event logging)
+- [ ] Run `make preflight` before claiming work is done
+
+## MUST NOT
+
+- Skip context loading
+- Selectively ignore governance because the task “seems small”
+- Commit `.env`, secrets, or widen CORS to `*`

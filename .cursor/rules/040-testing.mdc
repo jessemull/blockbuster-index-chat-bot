@@ -1,0 +1,22 @@
+---
+description: "Jest testing conventions and coverage expectations."
+globs: "**/*.test.ts"
+alwaysApply: false
+---
+
+# Testing
+
+See `docs/TESTING.md`.
+
+## MUST
+
+- Cover happy and sad paths for changed behavior
+- Mock `@anthropic-ai/sdk` for Claude unit tests
+- Keep tests isolated and fast
+- Preserve ≥ 80% Jest coverage thresholds
+
+## MUST NOT
+
+- Delete tests to make CI green
+- Assert on third-party internals
+- Leave failing suites

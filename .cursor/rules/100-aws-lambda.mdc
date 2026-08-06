@@ -1,0 +1,23 @@
+---
+description: "AWS Lambda and API Gateway conventions for this chatbot."
+globs: "{src/**/*.ts,template.yaml,cloudformation/**/*.yaml,api.yaml}"
+alwaysApply: false
+---
+
+# AWS Lambda / API Gateway
+
+See `docs/ARCHITECTURE.md`, `docs/DEPLOYMENT.md`.
+
+## MUST
+
+- Message max 2000; history max 5 with validated roles/content
+- Claude service errors → handler **502**
+- Keep stage MethodSettings throttle (5 / 10) unless product changes it
+- Update `api.yaml` when HTTP contracts change
+- Bump API `DeploymentNonce` when forcing API Gateway redeploy
+
+## MUST NOT
+
+- Return Claude failures as 200
+- Log full API Gateway events
+- Collapse CFN stacks without a migration plan
