@@ -84,7 +84,8 @@ These apply to **every** change. No exceptions without explicit human approval.
 | When               | Gate                                                              | Failure policy        |
 | ------------------ | ----------------------------------------------------------------- | --------------------- |
 | **Commit**         | husky + lint-staged (eslint/prettier on staged files); commitlint | Block commit          |
-| **Local / pre-PR** | `make preflight`                                                  | Fix before opening PR |
+| **Push**           | husky `pre-push` → `make preflight` (lint + test + build)         | Block push            |
+| **Local / pre-PR** | `make preflight` (also run manually anytime)                      | Fix before opening PR |
 | **PR CI**          | lint, test, build, production `npm audit`                         | Block merge           |
 | **Deploy**         | lint, test, build, CloudFormation change set                      | Block deploy          |
 

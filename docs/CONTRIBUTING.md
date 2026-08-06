@@ -34,7 +34,7 @@ Cursor command: `.cursor/commands/start-feature.md`
 ## Commits
 
 - Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `test:`, `refactor:`)
-- husky runs lint-staged + commitlint
+- husky **pre-commit**: lint-staged; **commit-msg**: commitlint; **pre-push**: `make preflight`
 - Do not use `--no-verify` unless explicitly requested
 
 ---

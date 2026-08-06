@@ -76,6 +76,7 @@ Resolve conflicts upward, never downward.
 | ------------------- | --------------------------------- | -------------------------- |
 | husky + lint-staged | eslint/prettier on staged files   | Commit                     |
 | commitlint          | Conventional Commits              | Commit                     |
+| husky `pre-push`    | `make preflight`                  | Push                       |
 | `make preflight`    | lint + test + build               | Local / expected before PR |
 | PR CI               | lint, test, build, prod audit     | Merge                      |
 | Deploy workflows    | lint, test, build, CloudFormation | Deploy                     |

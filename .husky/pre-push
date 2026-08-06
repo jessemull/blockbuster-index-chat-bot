@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+echo "husky: running make preflight before push..."
+make preflight

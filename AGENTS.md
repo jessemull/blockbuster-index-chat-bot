@@ -7,14 +7,14 @@
 
 ## Repository Overview
 
-| Field            | Value                                            |
-| ---------------- | ------------------------------------------------ |
-| **Project**      | Blockbuster Index Chat Bot (“Tapey”)             |
-| **Architecture** | Single AWS Lambda behind API Gateway             |
-| **Runtime**      | Node.js 20, TypeScript (strict)                  |
-| **LLM**          | Anthropic Claude 3 Haiku via `@anthropic-ai/sdk` |
-| **CI/CD**        | GitHub Actions + CloudFormation                  |
-| **Git hooks**    | husky + lint-staged + Conventional Commits       |
+| Field            | Value                                                           |
+| ---------------- | --------------------------------------------------------------- |
+| **Project**      | Blockbuster Index Chat Bot (“Tapey”)                            |
+| **Architecture** | Single AWS Lambda behind API Gateway                            |
+| **Runtime**      | Node.js 20, TypeScript (strict)                                 |
+| **LLM**          | Anthropic Claude 3 Haiku via `@anthropic-ai/sdk`                |
+| **CI/CD**        | GitHub Actions + CloudFormation                                 |
+| **Git hooks**    | husky (pre-commit, commit-msg, pre-push) + Conventional Commits |
 
 ### Structure
 
@@ -137,6 +137,7 @@ See `docs/TESTING.md`.
 - Commits: Conventional Commits (`feat:`, `fix:`, `chore:`, `docs:`, `test:`)
 - Keep PRs focused; use `.github/PULL_REQUEST_TEMPLATE.md`
 - Review with severity tiers in `docs/REVIEW.md`
+- Push runs `make preflight` via husky (`HUSKY=0 git push` only if the user explicitly allows skipping hooks)
 
 ---
 

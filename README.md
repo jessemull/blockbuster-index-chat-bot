@@ -355,9 +355,13 @@ Check formatting:
 npm run format:check
 ```
 
-### Pre-Commit Hook
+### Pre-Commit / Pre-Push Hooks
 
-**Lint-staged** is configured to run linting before each commit. The commit will be blocked if linting fails, ensuring code quality at the commit level.
+**Husky** is installed (`prepare`: `husky`). Hooks:
+
+- **pre-commit** — lint-staged (ESLint + Prettier on staged files)
+- **commit-msg** — commitlint (Conventional Commits)
+- **pre-push** — `make preflight` (lint + test + build); blocks the push on failure
 
 ## Unit Tests & Code Coverage
 
