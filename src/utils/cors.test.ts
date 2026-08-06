@@ -24,6 +24,13 @@ describe("getCorsHeaders", () => {
     expect(headers["Access-Control-Allow-Origin"]).toBe(ALLOWED_ORIGINS[0]);
   });
 
+  it("allows the local CloudFront proxy origin on port 8080", () => {
+    const headers = getCorsHeaders("http://localhost:8080");
+    expect(headers["Access-Control-Allow-Origin"]).toBe(
+      "http://localhost:8080",
+    );
+  });
+
   it("returns headers with the first allowed origin if origin is empty string", () => {
     const headers = getCorsHeaders("");
     expect(headers["Access-Control-Allow-Origin"]).toBe(ALLOWED_ORIGINS[0]);

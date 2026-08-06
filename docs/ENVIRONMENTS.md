@@ -23,6 +23,7 @@ Defined in `src/constants/cors.ts`:
 - `https://www.blockbusterindex.com`
 - `https://www.dev.blockbusterindex.com`
 - `http://localhost:3000`
+- `http://localhost:8080` (local CloudFront proxy in `blockbuster-index`)
 
 ---
 
