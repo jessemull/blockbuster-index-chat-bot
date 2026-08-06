@@ -112,7 +112,7 @@ Resources:
             maxLength: 2000
           history:
             type: array
-            description: "Previous conversation history (optional, defaults to empty array)"
+            description: "Previous conversation history (optional). When present, messages must alternate user/assistant, start with user, and end with assistant. Max 5 messages."
             items:
               type: object
               required:
@@ -163,7 +163,7 @@ Resources:
             description: "Tapey's response message"
           history:
             type: array
-            description: "Updated conversation history (limited to 5 messages)"
+            description: "Updated conversation history (at most 5 messages), always starting with user and ending with assistant for safe round-trips."
             items:
               type: object
               required:

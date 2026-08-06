@@ -70,6 +70,8 @@ Cross-stack references use CloudFormation exports/imports (bucket name, role ARN
 ## Key invariants
 
 - History is sanitized and truncated **before** Claude is called
+- History must alternate `user`/`assistant`, start with user, and end with assistant
+- Outbound history uses `trimToUserStart` after the length cap so clients never round-trip an assistant-first sequence
 - `MAX_MESSAGE_LENGTH = 2000`, `MAX_HISTORY_LENGTH = 5`
 - Production webpack strips `console.info`/`console.debug` but keeps `console.log` (request metadata) and `console.error`
 - API Gateway OPTIONS uses AWS_PROXY so CORS matches the Lambda allowlist

@@ -91,8 +91,9 @@ Run **`make`** or **`make help`** for the full list.
 ### Error handling
 
 - Validate inputs in the handler (JSON, empty message, max length, history)
+- History: alternate user/assistant, start with user, end with assistant; outbound history is trimmed via `trimToUserStart`
 - Claude failures: service returns `{ message, error }`; handler responds **502**
-- Unexpected errors: **500** with generic body; log via `console.error`
+- Unexpected errors: **500** with generic body; log structured metadata via `console.error` (no raw objects)
 
 ---
 
@@ -108,7 +109,7 @@ handler → services (claude, history)
 
 - **handler**: HTTP method routing, validation, response shaping, CORS headers
 - **services/claude**: Anthropic API only
-- **services/history**: history sanitize/limit/build/convert
+- **services/history**: sanitize (role/content/alternation), limit, `trimToUserStart`, build, convert
 - **utils**: pure helpers (CORS)
 - **constants**: config and prompts (no I/O)
 

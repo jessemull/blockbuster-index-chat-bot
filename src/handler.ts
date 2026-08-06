@@ -162,7 +162,11 @@ export const handler = async (
       }),
     };
   } catch (error) {
-    console.error("Error processing request:", error);
+    console.error("Error processing request", {
+      name: error instanceof Error ? error.name : undefined,
+      message: error instanceof Error ? error.message : "Unknown error",
+      requestId: event.requestContext.requestId,
+    });
 
     return {
       statusCode: 500,

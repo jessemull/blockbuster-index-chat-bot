@@ -133,7 +133,7 @@ The chat bot implements several strategies to manage costs effectively while mai
 ### Token Management
 
 - **Max Tokens**: Limited to 500 tokens per response to control API costs.
-- **History Truncation**: Conversation history limited to 5 messages maximum.
+- **History Truncation**: At most 5 messages; must alternate user/assistant (start user, end assistant). Responses are trimmed so returned history starts with user.
 - **Message Length Limit**: Requests capped at 2000 characters.
 - **Stage Throttling**: API Gateway stage limits of 5 requests/second (burst 10).
 - **Efficient Prompting**: Optimized system prompt to reduce token usage.
@@ -311,7 +311,7 @@ For local development and testing:
 - **ESLint**: Code must pass all linting rules without warnings.
 - **Prettier**: Code must be properly formatted using Prettier.
 - **Jest**: All new code must include comprehensive unit tests.
-- **Coverage**: Maintain > 80% minimum code coverage across all metrics.
+- **Coverage**: Maintain ≥ 80% minimum code coverage across all metrics.
 
 ## Commits & Commitizen
 

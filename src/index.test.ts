@@ -469,7 +469,11 @@ describe("Blockbuster Index Chat Bot Handler", () => {
     expect(result.statusCode).toBe(500);
     const responseBody = JSON.parse(result.body!);
     expect(responseBody.error).toBe("Internal server error");
-    expect(console.error).toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalledWith("Error processing request", {
+      name: "Error",
+      message: "Unexpected error",
+      requestId: "test-request-id",
+    });
   });
 });
 

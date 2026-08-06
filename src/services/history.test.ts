@@ -3,6 +3,8 @@ import {
   buildConversationHistory,
   convertToClaudeFormat,
   sanitizeHistory,
+  trimToUserStart,
+  isValidHistoryMessage,
 } from "./history";
 import { ChatMessage } from "../types";
 import { MAX_HISTORY_LENGTH } from "../constants";
@@ -294,6 +296,57 @@ describe("History Service", () => {
         { role: "user", content: "", timestamp: "2023-01-01T00:00:00Z" },
       ]);
       expect(result.error).toContain("valid role");
+    });
+
+    it("should reject null history entries", () => {
+      const result = sanitizeHistory([null as unknown as ChatMessage]);
+      expect(result.error).toContain("valid role");
+    });
+  });
+
+  describe("trimToUserStart", () => {
+    it("should drop leading assistant messages", () => {
+      const history: ChatMessage[] = [
+        {
+          role: "assistant",
+          content: "Leftover",
+          timestamp: "2023-01-01T00:00:00Z",
+        },
+        { role: "user", content: "Hi", timestamp: "2023-01-01T00:00:01Z" },
+        {
+          role: "assistant",
+          content: "Hello",
+          timestamp: "2023-01-01T00:00:02Z",
+        },
+      ];
+      expect(trimToUserStart(history)).toEqual([
+        { role: "user", content: "Hi", timestamp: "2023-01-01T00:00:01Z" },
+        {
+          role: "assistant",
+          content: "Hello",
+          timestamp: "2023-01-01T00:00:02Z",
+        },
+      ]);
+    });
+
+    it("should return empty array when history is assistant-only", () => {
+      expect(
+        trimToUserStart([
+          {
+            role: "assistant",
+            content: "Only assistant",
+            timestamp: "2023-01-01T00:00:00Z",
+          },
+        ]),
+      ).toEqual([]);
+    });
+  });
+
+  describe("isValidHistoryMessage", () => {
+    it("should reject null and non-object values", () => {
+      expect(isValidHistoryMessage(null)).toBe(false);
+      expect(isValidHistoryMessage(undefined)).toBe(false);
+      expect(isValidHistoryMessage("user")).toBe(false);
     });
   });
 });
