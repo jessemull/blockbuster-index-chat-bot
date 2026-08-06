@@ -12,7 +12,6 @@ export async function getTapeyResponse(
   history: ChatMessage[] = [],
 ): Promise<ClaudeApiResponse> {
   try {
-    // Convert history to Claude format
     const claudeHistory = convertToClaudeFormat(history);
 
     const response = await anthropic.messages.create({
@@ -28,9 +27,10 @@ export async function getTapeyResponse(
       ],
     });
 
+    const firstBlock = response.content[0];
     const botResponse =
-      response.content[0].type === "text"
-        ? response.content[0].text
+      firstBlock?.type === "text"
+        ? firstBlock.text
         : "Sorry dude, I'm having trouble processing that right now!";
 
     return { message: botResponse };

@@ -71,7 +71,7 @@ The **Blockbuster Index Chat Bot** employs a **serverless architecture** built o
 - **AWS Lambda**: Serverless compute for handling chat requests without managing servers.
 - **API Gateway**: RESTful API interface with custom domain support and request validation.
 - **CloudFormation**: Infrastructure as Code (IaC) for defining and provisioning AWS resources.
-- **S3**: Storage for Lambda deployment packages and versioning.
+- **S3**: Storage for Lambda deployment packages.
 - **CloudWatch**: Logging and monitoring for performance and error tracking.
 
 ### Request Flow
@@ -131,10 +131,9 @@ The chat bot implements several strategies to manage costs effectively while mai
 
 ### Monitoring & Alerts
 
-- **Usage Tracking**: CloudWatch metrics for request volume and costs.
+- **Usage Tracking**: CloudWatch metrics for request volume.
 - **Error Monitoring**: Structured logging for cost-related issues.
-- **Performance Metrics**: Response time and token usage monitoring.
-- **Budget Alerts**: CloudWatch alarms for cost thresholds.
+- **Performance Metrics**: Response time monitoring via CloudWatch.
 
 ## API Endpoints
 
@@ -168,15 +167,14 @@ The **Blockbuster Index Chat Bot** operates in multiple environments to ensure s
 
 ### Environment Configuration
 
-- **Development**: `dev` environment with testing domain and relaxed rate limits.
-- **Production**: `prod` environment with production domain and optimized settings.
+- **Development**: `dev` environment with testing domain.
+- **Production**: `prod` environment with production domain.
 
 ### Environment-Specific Settings
 
 - **Custom Domains**: Environment-specific API Gateway domains.
 - **SSL Certificates**: Separate certificates for each environment.
-- **Rate Limiting**: Environment-specific usage plans and throttling.
-- **Logging Levels**: Different logging verbosity per environment.
+- **Rate Limiting**: Stage throttling (5 requests/second, burst 10) for all environments.
 
 ## Tech Stack
 
@@ -188,7 +186,7 @@ The **Blockbuster Index Chat Bot** is built using modern serverless technologies
 
 - **AWS CloudFormation**: Infrastructure as Code (IaC) used to define and provision AWS resources like Lambda functions, API Gateway, and IAM roles.
 
-- **AWS S3**: Object storage for Lambda deployment packages with versioning and lifecycle management.
+- **AWS S3**: Object storage for Lambda deployment packages with encryption and public access blocked.
 
 - **AWS CloudWatch**: Provides logging and monitoring for Lambda invocations and errors.
 
@@ -415,10 +413,9 @@ npm run package
 
 This process:
 
-1. **Dependency Installation**: Installs production dependencies
-2. **Bundle Creation**: Creates deployment package with all required files
-3. **Compression**: Creates optimized ZIP file for Lambda upload
-4. **Versioning**: Includes version and commit information
+1. **Bundle Creation**: Creates deployment package from the webpack output
+2. **Compression**: Creates optimized ZIP file for Lambda upload
+3. **Versioning**: Includes version and commit information in the S3 object name
 
 ### GitHub Workflows
 
@@ -463,7 +460,8 @@ Automated quality gates for all pull requests. Automatically triggered on all pu
 
 Infrastructure is managed using AWS CloudFormation templates with environment-specific parameterization:
 
-- **`blockbuster-index-chat-bot-api.yaml`**: Defines API Gateway, Lambda function, and related resources with comprehensive model validation.
+- **`blockbuster-index-chat-bot-api.yaml`**: Defines API Gateway, models, stage throttling, and custom domain.
+- **`template.yaml`**: Defines the Lambda function and invoke permissions.
 - **`blockbuster-index-chat-bot-role.yaml`**: Defines IAM roles and permissions for Lambda execution.
 - **`blockbuster-index-chat-bot-s3.yaml`**: Defines S3 buckets for Lambda deployment packages.
 

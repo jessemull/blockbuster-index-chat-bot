@@ -10,8 +10,8 @@ info:
     name: Blockbuster Index Team
     url: https://www.blockbusterindex.com
   license:
-    name: MIT
-    url: https://opensource.org/licenses/MIT
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
 
 servers:
   - url: https://api-dev.blockbusterindex.com
@@ -167,6 +167,7 @@ components:
         content:
           type: string
           description: The content of the message
+          maxLength: 2000
           example: "What is the Blockbuster Index?"
         timestamp:
           type: string

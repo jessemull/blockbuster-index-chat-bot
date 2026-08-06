@@ -159,7 +159,7 @@ describe("Blockbuster Index Chat Bot Handler", () => {
       content: "Hey there, dude! That's totally awesome!",
       timestamp: expect.any(String),
     });
-    expect(mockGetTapeyResponse).toHaveBeenCalledWith("Hello bot!", undefined);
+    expect(mockGetTapeyResponse).toHaveBeenCalledWith("Hello bot!", []);
   });
 
   it("should return 400 for POST request with empty message", async () => {
@@ -329,6 +329,48 @@ describe("Blockbuster Index Chat Bot Handler", () => {
     expect(responseBody.error).toBe(
       "Message exceeds maximum length of 2000 characters",
     );
+  });
+
+  it("should return 400 for POST request with invalid history content", async () => {
+    const event = getMockEvent(
+      "POST",
+      JSON.stringify({
+        message: "Hello",
+        history: [{ role: "user", content: "a".repeat(2001) }],
+      }),
+    );
+    const result = await handler(event);
+
+    expect(result.statusCode).toBe(400);
+    const responseBody = JSON.parse(result.body!);
+    expect(responseBody.error).toContain("2000");
+  });
+
+  it("should truncate long history before calling Claude", async () => {
+    const longHistory = Array.from({ length: 8 }, (_, i) => ({
+      role: i % 2 === 0 ? ("user" as const) : ("assistant" as const),
+      content: `Old ${i}`,
+      timestamp: `2023-01-01T00:00:0${i}Z`,
+    }));
+
+    const event = getMockEvent(
+      "POST",
+      JSON.stringify({
+        message: "New message",
+        history: longHistory,
+      }),
+    );
+    const result = await handler(event);
+
+    expect(result.statusCode).toBe(200);
+    expect(mockGetTapeyResponse).toHaveBeenCalledWith(
+      "New message",
+      expect.arrayContaining([
+        expect.objectContaining({ content: "Old 3" }),
+        expect.objectContaining({ content: "Old 7" }),
+      ]),
+    );
+    expect(mockGetTapeyResponse.mock.calls[0][1]).toHaveLength(5);
   });
 
   it("should handle origin extraction when referer doesn't match regex", async () => {

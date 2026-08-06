@@ -62,6 +62,17 @@ describe("getTapeyResponse", () => {
     });
   });
 
+  it("returns fallback message if content array is empty", async () => {
+    __mockCreate__.mockResolvedValue({
+      content: [],
+    });
+
+    const response = await getTapeyResponse("Empty response");
+    expect(response).toEqual({
+      message: "Sorry dude, I'm having trouble processing that right now!",
+    });
+  });
+
   it("returns error message if API call throws", async () => {
     const error = new Error("API is down");
     __mockCreate__.mockRejectedValue(error);

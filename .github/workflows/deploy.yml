@@ -6,7 +6,7 @@ on:
       environment:
         description: "Choose environment (dev/prod)"
         required: true
-        default: "test"
+        default: "dev"
         type: choice
         options:
           - dev

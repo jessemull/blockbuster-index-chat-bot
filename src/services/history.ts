@@ -1,18 +1,48 @@
 import { ChatMessage } from "../types";
-import { MAX_HISTORY_LENGTH } from "../constants";
+import { MAX_HISTORY_LENGTH, MAX_MESSAGE_LENGTH } from "../constants";
 
-/**
- * Limits the conversation history to the specified maximum length
- * Keeps the most recent messages
- */
+const VALID_ROLES = new Set(["user", "assistant"]);
+
 export function limitHistoryLength(history: ChatMessage[] = []): ChatMessage[] {
   return history.slice(-MAX_HISTORY_LENGTH);
 }
 
-/**
- * Builds a new conversation history by adding user and assistant messages
- * and limiting to the maximum length
- */
+export function isValidHistoryMessage(
+  message: unknown,
+): message is ChatMessage {
+  if (!message || typeof message !== "object") {
+    return false;
+  }
+
+  const candidate = message as ChatMessage;
+  return (
+    VALID_ROLES.has(candidate.role) &&
+    typeof candidate.content === "string" &&
+    candidate.content.length > 0 &&
+    candidate.content.length <= MAX_MESSAGE_LENGTH
+  );
+}
+
+export function sanitizeHistory(history: ChatMessage[] = []): {
+  history: ChatMessage[];
+  error?: string;
+} {
+  if (!Array.isArray(history)) {
+    return { history: [], error: "History must be an array" };
+  }
+
+  for (const message of history) {
+    if (!isValidHistoryMessage(message)) {
+      return {
+        history: [],
+        error: `Each history message must have a valid role and content up to ${MAX_MESSAGE_LENGTH} characters`,
+      };
+    }
+  }
+
+  return { history: limitHistoryLength(history) };
+}
+
 export function buildConversationHistory(
   existingHistory: ChatMessage[] = [],
   userMessage: string,
@@ -38,9 +68,6 @@ export function buildConversationHistory(
   return limitHistoryLength(updatedHistory);
 }
 
-/**
- * Converts ChatMessage array to Claude API format
- */
 export function convertToClaudeFormat(
   history: ChatMessage[] = [],
 ): Array<{ role: "user" | "assistant"; content: string }> {

@@ -43,7 +43,10 @@ Resources:
       FunctionName: !Ref BlockbusterChatBotFunction
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:*/GET/*"
+      SourceArn: !Sub
+        - "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/GET/*"
+        - ApiId:
+            Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
 
   LambdaPermissionPost:
     Type: AWS::Lambda::Permission
@@ -51,7 +54,10 @@ Resources:
       FunctionName: !Ref BlockbusterChatBotFunction
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:*/POST/*"
+      SourceArn: !Sub
+        - "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/POST/*"
+        - ApiId:
+            Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
 
   LambdaPermissionOptions:
     Type: AWS::Lambda::Permission
@@ -59,16 +65,14 @@ Resources:
       FunctionName: !Ref BlockbusterChatBotFunction
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:*/OPTIONS/*"
-
-  MyLambdaVersion:
-    Type: AWS::Lambda::Version
-    Properties:
-      FunctionName: !Ref BlockbusterChatBotFunction
+      SourceArn: !Sub
+        - "arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiId}/*/OPTIONS/*"
+        - ApiId:
+            Fn::ImportValue: !Sub "BlockbusterChatBotApiGatewayId-${Environment}"
 
 Outputs:
   BlockbusterChatBotFunctionArn:
     Description: "ARN of the chat bot function"
-    Value: !Ref MyLambdaVersion
+    Value: !GetAtt BlockbusterChatBotFunction.Arn
     Export:
       Name: !Sub "BlockbusterChatBotFunctionArn-${Environment}"

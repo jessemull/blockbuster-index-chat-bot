@@ -3,7 +3,7 @@ import { ChatRequest, ChatResponse } from "./types";
 import { MAX_MESSAGE_LENGTH } from "./constants";
 import { getCorsHeaders } from "./utils/cors";
 import { getTapeyResponse } from "./services/claude";
-import { buildConversationHistory } from "./services/history";
+import { buildConversationHistory, sanitizeHistory } from "./services/history";
 
 export const handler = async (
   event: APIGatewayProxyEvent,
@@ -99,9 +99,25 @@ export const handler = async (
         };
       }
 
+      const { history, error: historyError } = sanitizeHistory(
+        chatRequest.history || [],
+      );
+
+      if (historyError) {
+        return {
+          statusCode: 400,
+          headers: corsHeaders,
+          body: JSON.stringify({
+            error: historyError,
+            timestamp,
+            requestId,
+          }),
+        };
+      }
+
       const tapeyResponse = await getTapeyResponse(
         chatRequest.message,
-        chatRequest.history,
+        history,
       );
 
       if (tapeyResponse.error) {
@@ -117,7 +133,7 @@ export const handler = async (
       }
 
       const updatedHistory = buildConversationHistory(
-        chatRequest.history || [],
+        history,
         chatRequest.message,
         tapeyResponse.message,
       );

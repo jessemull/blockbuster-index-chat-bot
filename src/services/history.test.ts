@@ -2,6 +2,7 @@ import {
   limitHistoryLength,
   buildConversationHistory,
   convertToClaudeFormat,
+  sanitizeHistory,
 } from "./history";
 import { ChatMessage } from "../types";
 import { MAX_HISTORY_LENGTH } from "../constants";
@@ -212,6 +213,54 @@ describe("History Service", () => {
         content: "Test message",
       });
       expect(result[0]).not.toHaveProperty("timestamp");
+    });
+  });
+
+  describe("sanitizeHistory", () => {
+    it("should return empty history for empty input", () => {
+      expect(sanitizeHistory([])).toEqual({ history: [] });
+    });
+
+    it("should reject non-array history", () => {
+      expect(sanitizeHistory("nope" as unknown as ChatMessage[])).toEqual({
+        history: [],
+        error: "History must be an array",
+      });
+    });
+
+    it("should reject invalid roles", () => {
+      const result = sanitizeHistory([
+        {
+          role: "system" as "user",
+          content: "Hello",
+          timestamp: "2023-01-01T00:00:00Z",
+        },
+      ]);
+      expect(result.error).toContain("valid role");
+    });
+
+    it("should reject oversized history content", () => {
+      const result = sanitizeHistory([
+        {
+          role: "user",
+          content: "a".repeat(2001),
+          timestamp: "2023-01-01T00:00:00Z",
+        },
+      ]);
+      expect(result.error).toContain("2000");
+    });
+
+    it("should truncate history longer than the max length", () => {
+      const history: ChatMessage[] = Array.from({ length: 8 }, (_, i) => ({
+        role: i % 2 === 0 ? ("user" as const) : ("assistant" as const),
+        content: `Message ${i}`,
+        timestamp: `2023-01-01T00:00:0${i}Z`,
+      }));
+
+      const result = sanitizeHistory(history);
+      expect(result.error).toBeUndefined();
+      expect(result.history).toHaveLength(MAX_HISTORY_LENGTH);
+      expect(result.history[0].content).toBe("Message 3");
     });
   });
 });

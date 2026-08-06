@@ -16,6 +16,10 @@ Parameters:
   CertificateArn:
     Type: String
     Description: "ARN of the SSL certificate for the custom domain"
+  DeploymentNonce:
+    Type: String
+    Default: "1"
+    Description: "Bump this value to force a new API Gateway deployment"
 
 Mappings:
   EnvironmentMapping:
@@ -69,6 +73,7 @@ Resources:
           content:
             type: string
             description: "The content of the message"
+            maxLength: 2000
           timestamp:
             type: string
             format: date-time
@@ -107,6 +112,7 @@ Resources:
                 content:
                   type: string
                   description: "The content of the message"
+                  maxLength: 2000
                 timestamp:
                   type: string
                   format: date-time
@@ -150,6 +156,7 @@ Resources:
                 content:
                   type: string
                   description: "The content of the message"
+                  maxLength: 2000
                 timestamp:
                   type: string
                   format: date-time
@@ -277,7 +284,7 @@ Resources:
       - ChatRequestValidator
     Properties:
       RestApiId: !Ref ChatBotApi
-      Description: !Sub "Deployment for ${Environment} environment"
+      Description: !Sub "Deployment for ${Environment} environment (${DeploymentNonce})"
 
   ApiStage:
     Type: AWS::ApiGateway::Stage
