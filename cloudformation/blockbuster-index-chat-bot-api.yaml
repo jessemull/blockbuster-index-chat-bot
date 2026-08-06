@@ -58,7 +58,14 @@ Resources:
     Properties:
       RestApiId: !Ref ChatBotApi
       ContentType: application/json
-      Name: !Join ["", ["ChatMessage", !FindInMap [EnvironmentMapping, !Ref Environment, Name]]]
+      Name:
+        !Join [
+          "",
+          [
+            "ChatMessage",
+            !FindInMap [EnvironmentMapping, !Ref Environment, Name],
+          ],
+        ]
       Description: "A single message in the conversation history"
       Schema:
         type: object
@@ -84,7 +91,14 @@ Resources:
     Properties:
       RestApiId: !Ref ChatBotApi
       ContentType: application/json
-      Name: !Join ["", ["ChatRequest", !FindInMap [EnvironmentMapping, !Ref Environment, Name]]]
+      Name:
+        !Join [
+          "",
+          [
+            "ChatRequest",
+            !FindInMap [EnvironmentMapping, !Ref Environment, Name],
+          ],
+        ]
       Description: "Request body for sending a message to the chat bot"
       Schema:
         type: object
@@ -127,7 +141,14 @@ Resources:
     Properties:
       RestApiId: !Ref ChatBotApi
       ContentType: application/json
-      Name: !Join ["", ["ChatResponse", !FindInMap [EnvironmentMapping, !Ref Environment, Name]]]
+      Name:
+        !Join [
+          "",
+          [
+            "ChatResponse",
+            !FindInMap [EnvironmentMapping, !Ref Environment, Name],
+          ],
+        ]
       Description: "Response from the chat bot"
       Schema:
         type: object
@@ -175,7 +196,14 @@ Resources:
     Properties:
       RestApiId: !Ref ChatBotApi
       ContentType: application/json
-      Name: !Join ["", ["ErrorResponse", !FindInMap [EnvironmentMapping, !Ref Environment, Name]]]
+      Name:
+        !Join [
+          "",
+          [
+            "ErrorResponse",
+            !FindInMap [EnvironmentMapping, !Ref Environment, Name],
+          ],
+        ]
       Description: "Error response format"
       Schema:
         type: object
@@ -200,11 +228,16 @@ Resources:
     Type: AWS::ApiGateway::RequestValidator
     Properties:
       RestApiId: !Ref ChatBotApi
-      Name: !Join ["", ["ChatRequestValidator", !FindInMap [EnvironmentMapping, !Ref Environment, Name]]]
+      Name:
+        !Join [
+          "",
+          [
+            "ChatRequestValidator",
+            !FindInMap [EnvironmentMapping, !Ref Environment, Name],
+          ],
+        ]
       ValidateRequestBody: true
       ValidateRequestParameters: false
-
-
 
   GetChatMethod:
     Type: AWS::ApiGateway::Method
@@ -224,7 +257,6 @@ Resources:
         - StatusCode: "500"
           ResponseModels:
             application/json: !Ref ErrorResponseModel
-
 
   PostChatMethod:
     Type: AWS::ApiGateway::Method

@@ -28,24 +28,24 @@ paths:
       tags:
         - Health
       responses:
-        '200':
+        "200":
           description: API is healthy and running
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChatResponse'
+                $ref: "#/components/schemas/ChatResponse"
               example:
                 message: "Blockbuster Index Chat Bot is running! Send a POST request with a message to start chatting."
                 history: []
                 timestamp: "2023-01-01T00:00:00Z"
                 requestId: "abc-123-def"
-        '500':
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-    
+                $ref: "#/components/schemas/ErrorResponse"
+
     post:
       summary: Send a message to Tapey
       description: |
@@ -60,17 +60,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ChatRequest'
+              $ref: "#/components/schemas/ChatRequest"
             example:
               message: "What is the Blockbuster Index?"
               history: []
       responses:
-        '200':
+        "200":
           description: Successful response from Tapey
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ChatResponse'
+                $ref: "#/components/schemas/ChatResponse"
               example:
                 message: "Hey there! The Blockbuster Index is totally awesome - it's this rad project that tracks how people are spending their money and how retail stores are doing across the country. As Morpheus said in The Matrix, 'Unfortunately, no one can be told what the data is. You have to see it for yourself!'"
                 history:
@@ -82,12 +82,12 @@ paths:
                     timestamp: "2023-01-01T00:00:01Z"
                 timestamp: "2023-01-01T00:00:01Z"
                 requestId: "abc-123-def"
-        '400':
+        "400":
           description: Bad request - invalid input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
               examples:
                 emptyMessage:
                   summary: Empty message
@@ -101,29 +101,29 @@ paths:
                     error: "Invalid JSON in request body"
                     timestamp: "2023-01-01T00:00:00Z"
                     requestId: "abc-123-def"
-        '405':
+        "405":
           description: Method not allowed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '502':
+                $ref: "#/components/schemas/ErrorResponse"
+        "502":
           description: Upstream Claude API failure
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
               example:
                 error: "Sorry dude, I'm having some technical difficulties right now! Try again in a bit!"
                 timestamp: "2023-01-01T00:00:00Z"
                 requestId: "abc-123-def"
-    
+
     options:
       summary: CORS preflight
       description: Handles CORS preflight requests
@@ -131,7 +131,7 @@ paths:
       tags:
         - CORS
       responses:
-        '200':
+        "200":
           description: CORS preflight successful
           headers:
             Access-Control-Allow-Origin:
@@ -174,7 +174,7 @@ components:
           format: date-time
           description: ISO 8601 timestamp of when the message was created
           example: "2023-01-01T00:00:00Z"
-    
+
     ChatRequest:
       type: object
       description: Request body for sending a message to the chat bot
@@ -191,14 +191,14 @@ components:
           type: array
           description: Previous conversation history (optional, defaults to empty array)
           items:
-            $ref: '#/components/schemas/ChatMessage'
+            $ref: "#/components/schemas/ChatMessage"
           maxItems: 5
           example: []
         userId:
           type: string
           description: Optional user identifier for future use
           example: "user123"
-    
+
     ChatResponse:
       type: object
       description: Response from the chat bot
@@ -216,7 +216,7 @@ components:
           type: array
           description: Updated conversation history (limited to 5 messages)
           items:
-            $ref: '#/components/schemas/ChatMessage'
+            $ref: "#/components/schemas/ChatMessage"
           maxItems: 5
         timestamp:
           type: string
@@ -227,7 +227,7 @@ components:
           type: string
           description: Unique request identifier for tracking
           example: "abc-123-def"
-    
+
     ErrorResponse:
       type: object
       description: Error response format
@@ -267,4 +267,4 @@ tags:
 
 externalDocs:
   description: Blockbuster Index Project
-  url: https://www.blockbusterindex.com 
+  url: https://www.blockbusterindex.com
