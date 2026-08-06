@@ -250,7 +250,7 @@ describe("History Service", () => {
       expect(result.error).toContain("2000");
     });
 
-    it("should truncate history longer than the max length", () => {
+    it("should truncate history longer than the max length and keep a valid turn", () => {
       const history: ChatMessage[] = Array.from({ length: 8 }, (_, i) => ({
         role: i % 2 === 0 ? ("user" as const) : ("assistant" as const),
         content: `Message ${i}`,
@@ -259,8 +259,39 @@ describe("History Service", () => {
 
       const result = sanitizeHistory(history);
       expect(result.error).toBeUndefined();
-      expect(result.history).toHaveLength(MAX_HISTORY_LENGTH);
-      expect(result.history[0].content).toBe("Message 3");
+      // slice(-5) starts with assistant; leading assistant is dropped for Claude
+      expect(result.history).toHaveLength(4);
+      expect(result.history[0]).toEqual(
+        expect.objectContaining({ role: "user", content: "Message 4" }),
+      );
+      expect(result.history[3]).toEqual(
+        expect.objectContaining({
+          role: "assistant",
+          content: "Message 7",
+        }),
+      );
+    });
+
+    it("should reject consecutive same-role messages", () => {
+      const result = sanitizeHistory([
+        { role: "user", content: "Hi", timestamp: "2023-01-01T00:00:00Z" },
+        { role: "user", content: "Again", timestamp: "2023-01-01T00:00:01Z" },
+      ]);
+      expect(result.error).toContain("alternate");
+    });
+
+    it("should reject history that ends with a user message", () => {
+      const result = sanitizeHistory([
+        { role: "user", content: "Hi", timestamp: "2023-01-01T00:00:00Z" },
+      ]);
+      expect(result.error).toContain("end with an assistant message");
+    });
+
+    it("should reject empty content messages", () => {
+      const result = sanitizeHistory([
+        { role: "user", content: "", timestamp: "2023-01-01T00:00:00Z" },
+      ]);
+      expect(result.error).toContain("valid role");
     });
   });
 });

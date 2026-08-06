@@ -14,6 +14,7 @@ describe("getCorsHeaders", () => {
     );
     expect(headers["Access-Control-Allow-Methods"]).toBe("GET,POST,OPTIONS");
     expect(headers["Content-Type"]).toBe("application/json");
+    expect(headers.Vary).toBe("Origin");
   });
 
   it("returns headers with the first allowed origin if the origin is not allowed", () => {

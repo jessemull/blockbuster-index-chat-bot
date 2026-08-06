@@ -61,7 +61,7 @@ These apply to **every** change. No exceptions without explicit human approval.
 ### API and product behavior
 
 - Message max length: **2000** characters (`MAX_MESSAGE_LENGTH`)
-- History: max **5** messages; validate role/content before calling Claude
+- History: max **5** messages; validate role/content/alternation before calling Claude
 - Claude upstream failures return **HTTP 502** (not 200 with a fake success)
 - CORS uses the allowlist in `src/constants/cors.ts` (OPTIONS proxied through Lambda)
 

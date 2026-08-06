@@ -96,14 +96,15 @@ describe("getTapeyResponse", () => {
     });
   });
 
-  it("logs error to console", async () => {
-    const error = new Error("Logging test");
+  it("logs error metadata to console without the raw error object", async () => {
+    const error = Object.assign(new Error("Logging test"), { status: 529 });
     __mockCreate__.mockRejectedValue(error);
 
     await getTapeyResponse("test");
-    expect(console.error).toHaveBeenCalledWith(
-      "Error calling Claude API:",
-      error,
-    );
+    expect(console.error).toHaveBeenCalledWith("Error calling Claude API", {
+      name: "Error",
+      message: "Logging test",
+      status: 529,
+    });
   });
 });

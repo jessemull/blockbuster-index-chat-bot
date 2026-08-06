@@ -11,7 +11,7 @@
 | ---------------- | --------------------------------------------------------------- |
 | **Project**      | Blockbuster Index Chat Bot (“Tapey”)                            |
 | **Architecture** | Single AWS Lambda behind API Gateway                            |
-| **Runtime**      | Node.js 20, TypeScript (strict)                                 |
+| **Runtime**      | Node.js 24, TypeScript (strict)                                 |
 | **LLM**          | Anthropic Claude 3 Haiku via `@anthropic-ai/sdk`                |
 | **CI/CD**        | GitHub Actions + CloudFormation                                 |
 | **Git hooks**    | husky (pre-commit, commit-msg, pre-push) + Conventional Commits |

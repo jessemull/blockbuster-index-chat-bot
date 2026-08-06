@@ -17,9 +17,9 @@
 
 ## Logging
 
-- Log request metadata only: `requestId`, `method`, `path`, `origin`
+- Log request metadata only: `requestId`, `method`, `path`, `origin` (`console.log` is kept in production bundles for CloudWatch)
 - Never log full API Gateway events or chat message bodies
-- Keep `console.error` available in production bundles (webpack `pure_funcs` strips log/info/debug only)
+- Keep `console.error` available in production bundles (webpack `pure_funcs` strips `console.info` / `console.debug` only)
 
 ---
 

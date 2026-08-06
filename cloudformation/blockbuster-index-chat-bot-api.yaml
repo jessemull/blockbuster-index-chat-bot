@@ -350,22 +350,6 @@ Resources:
       RestApiId: !Ref ChatBotApi
       Stage: !Ref ApiStage
 
-  ChatBotUsagePlan:
-    Type: AWS::ApiGateway::UsagePlan
-    DependsOn: ApiStage
-    Properties:
-      UsagePlanName: !Sub "blockbuster-index-chat-bot-usage-plan-${Environment}"
-      Description: "Usage plan for Blockbuster Index Chat Bot API with rate limiting"
-      Throttle:
-        RateLimit: 5
-        BurstLimit: 10
-      Quota:
-        Limit: 1000
-        Period: DAY
-      ApiStages:
-        - ApiId: !Ref ChatBotApi
-          Stage: !Ref ApiStage
-
 Outputs:
   ApiGatewayId:
     Description: "API Gateway ID"

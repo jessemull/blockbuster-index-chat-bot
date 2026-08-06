@@ -79,6 +79,7 @@ describe("Blockbuster Index Chat Bot Handler", () => {
         "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
       "Content-Type": "application/json",
+      Vary: "Origin",
     });
 
     mockGetTapeyResponse.mockResolvedValue({
@@ -102,6 +103,7 @@ describe("Blockbuster Index Chat Bot Handler", () => {
         "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
       "Content-Type": "application/json",
+      Vary: "Origin",
     });
     expect(result.body).toBe("");
   });
@@ -117,6 +119,7 @@ describe("Blockbuster Index Chat Bot Handler", () => {
         "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
       "Content-Type": "application/json",
+      Vary: "Origin",
     });
 
     const responseBody = JSON.parse(result.body!);
@@ -142,6 +145,7 @@ describe("Blockbuster Index Chat Bot Handler", () => {
         "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
       "Content-Type": "application/json",
+      Vary: "Origin",
     });
 
     const responseBody = JSON.parse(result.body!);
@@ -366,11 +370,60 @@ describe("Blockbuster Index Chat Bot Handler", () => {
     expect(mockGetTapeyResponse).toHaveBeenCalledWith(
       "New message",
       expect.arrayContaining([
-        expect.objectContaining({ content: "Old 3" }),
+        expect.objectContaining({ content: "Old 4" }),
         expect.objectContaining({ content: "Old 7" }),
       ]),
     );
-    expect(mockGetTapeyResponse.mock.calls[0][1]).toHaveLength(5);
+    // Length-limited then leading assistant dropped for valid Claude turns
+    expect(mockGetTapeyResponse.mock.calls[0][1]).toHaveLength(4);
+  });
+
+  it("should extract origin from a valid Referer when Origin is missing", async () => {
+    const event = getMockEvent("POST", JSON.stringify({ message: "Hello" }));
+    event.headers.Origin = undefined;
+    event.headers.origin = undefined;
+    event.headers.Referer = "https://www.dev.blockbusterindex.com/chat?x=1";
+    event.headers.referer = undefined;
+
+    const result = await handler(event);
+
+    expect(result.statusCode).toBe(200);
+    expect(mockGetCorsHeaders).toHaveBeenCalledWith(
+      "https://www.dev.blockbusterindex.com",
+    );
+  });
+
+  it("should return 400 for POST request with empty history content", async () => {
+    const event = getMockEvent(
+      "POST",
+      JSON.stringify({
+        message: "Hello",
+        history: [{ role: "user", content: "" }],
+      }),
+    );
+    const result = await handler(event);
+
+    expect(result.statusCode).toBe(400);
+    const responseBody = JSON.parse(result.body!);
+    expect(responseBody.error).toContain("valid role");
+  });
+
+  it("should return 400 for non-alternating history roles", async () => {
+    const event = getMockEvent(
+      "POST",
+      JSON.stringify({
+        message: "Hello",
+        history: [
+          { role: "user", content: "Hi" },
+          { role: "user", content: "Again" },
+        ],
+      }),
+    );
+    const result = await handler(event);
+
+    expect(result.statusCode).toBe(400);
+    const responseBody = JSON.parse(result.body!);
+    expect(responseBody.error).toContain("alternate");
   });
 
   it("should handle origin extraction when referer doesn't match regex", async () => {

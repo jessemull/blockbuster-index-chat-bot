@@ -23,6 +23,53 @@ export function isValidHistoryMessage(
   );
 }
 
+/** Claude requires user/assistant alternation starting with user. */
+function isAlternatingUserFirst(history: ChatMessage[]): boolean {
+  for (let i = 0; i < history.length; i++) {
+    const expected = i % 2 === 0 ? "user" : "assistant";
+    if (history[i].role !== expected) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * After length limiting, drop a leading assistant (odd max length) so the
+ * sequence can start with user, then require strict alternation ending on
+ * assistant (or empty) before the handler appends the next user turn.
+ */
+function normalizeForClaude(history: ChatMessage[]): {
+  history: ChatMessage[];
+  error?: string;
+} {
+  const normalized = [...history];
+  while (normalized.length > 0 && normalized[0].role !== "user") {
+    normalized.shift();
+  }
+
+  if (!isAlternatingUserFirst(normalized)) {
+    return {
+      history: [],
+      error:
+        "History must alternate user/assistant roles and start with a user message",
+    };
+  }
+
+  if (
+    normalized.length > 0 &&
+    normalized[normalized.length - 1].role !== "assistant"
+  ) {
+    return {
+      history: [],
+      error:
+        "History must end with an assistant message before a new user turn",
+    };
+  }
+
+  return { history: normalized };
+}
+
 export function sanitizeHistory(history: ChatMessage[] = []): {
   history: ChatMessage[];
   error?: string;
@@ -40,7 +87,7 @@ export function sanitizeHistory(history: ChatMessage[] = []): {
     }
   }
 
-  return { history: limitHistoryLength(history) };
+  return normalizeForClaude(limitHistoryLength(history));
 }
 
 export function buildConversationHistory(

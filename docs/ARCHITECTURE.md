@@ -56,12 +56,12 @@ Status codes: `200` success, `400` validation, `405` method, `502` Claude upstre
 
 ## Infrastructure layout
 
-| Template                                              | Resources                                                                       |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `template.yaml`                                       | Lambda function, invoke permissions (GET/POST/OPTIONS)                          |
-| `cloudformation/blockbuster-index-chat-bot-api.yaml`  | Rest API, models, stage + MethodSettings, custom domain, usage plan scaffolding |
-| `cloudformation/blockbuster-index-chat-bot-role.yaml` | Execution role (scoped CloudWatch Logs)                                         |
-| `cloudformation/blockbuster-index-chat-bot-s3.yaml`   | Deployment bucket (SSE-S3, public access blocked)                               |
+| Template                                              | Resources                                                        |
+| ----------------------------------------------------- | ---------------------------------------------------------------- |
+| `template.yaml`                                       | Lambda function, invoke permissions (GET/POST/OPTIONS)           |
+| `cloudformation/blockbuster-index-chat-bot-api.yaml`  | Rest API, models, stage + MethodSettings throttle, custom domain |
+| `cloudformation/blockbuster-index-chat-bot-role.yaml` | Execution role (scoped CloudWatch Logs)                          |
+| `cloudformation/blockbuster-index-chat-bot-s3.yaml`   | Deployment bucket (SSE-S3, public access blocked)                |
 
 Cross-stack references use CloudFormation exports/imports (bucket name, role ARN, API id).
 
@@ -71,5 +71,5 @@ Cross-stack references use CloudFormation exports/imports (bucket name, role ARN
 
 - History is sanitized and truncated **before** Claude is called
 - `MAX_MESSAGE_LENGTH = 2000`, `MAX_HISTORY_LENGTH = 5`
-- Production webpack strips `console.log`/`info`/`debug` but keeps `console.error`
+- Production webpack strips `console.info`/`console.debug` but keeps `console.log` (request metadata) and `console.error`
 - API Gateway OPTIONS uses AWS_PROXY so CORS matches the Lambda allowlist

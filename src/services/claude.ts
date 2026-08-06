@@ -37,7 +37,15 @@ export async function getTapeyResponse(
 
     return { message: botResponse };
   } catch (error) {
-    console.error("Error calling Claude API:", error);
+    const status =
+      error && typeof error === "object" && "status" in error
+        ? (error as { status?: unknown }).status
+        : undefined;
+    console.error("Error calling Claude API", {
+      name: error instanceof Error ? error.name : undefined,
+      message: error instanceof Error ? error.message : "Unknown error",
+      status,
+    });
     return {
       message:
         "Sorry dude, I'm having some technical difficulties right now! Try again in a bit!",

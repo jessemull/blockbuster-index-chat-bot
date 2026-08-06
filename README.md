@@ -514,7 +514,7 @@ The API Gateway is configured with comprehensive features:
 - **Request Validation**: API Gateway models ensure proper request/response validation
 - **CORS Support**: Dynamic CORS allowlist handled by Lambda (including OPTIONS)
 - **Stage Throttling**: 5 requests/second with burst of 10 for anonymous traffic
-- **Usage Plans**: Quota scaffolding available for future API key association
+- **Stage throttle**: API Gateway MethodSettings — 5 rps / burst 10 (primary abuse control)
 - **Method Configuration**: GET, POST, and OPTIONS methods with Lambda proxy integration
 
 #### Lambda Function Configuration
